@@ -16,3 +16,8 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::post('getProductCount', 'ApiController@getProductCount');
+Route::post('process', 'ApiController@process');
+
+Route::get('single', 'ApiController@getSingleItemImages');
