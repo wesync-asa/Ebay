@@ -169,11 +169,12 @@ return [
          */
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
+        App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Hkonnet\LaravelEbay\EbayServiceProvider::class, 
-        Intervention\Image\ImageServiceProvider::class
+        Intervention\Image\ImageServiceProvider::class,
+        ZanySoft\Zip\ZipServiceProvider::class,
     ],
 
     /*
@@ -223,7 +224,8 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
         'Ebay' => Hkonnet\LaravelEbay\Facade\Ebay::class,
-        'Image' => Intervention\Image\Facades\Image::class
+        'Image' => Intervention\Image\Facades\Image::class,
+        'Zip' => ZanySoft\Zip\ZipFacade::class,
     ],
 
 ];

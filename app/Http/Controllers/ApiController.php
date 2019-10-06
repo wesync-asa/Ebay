@@ -13,11 +13,17 @@ use \DTS\eBaySDK\Finding\Enums;
 
 use App\Models\Query;
 use App\Models\Condition;
+use App\Jobs\ProcessEbay;
+use App\Events\QueryChanged;
+
+use App\Components\EBayApi;
+
 class ApiController extends Controller
 {
     //
     public function getProductCount(Request $req){
-        $response = $this->ebaySearch($req, 1);
+        $ebay = new EBayApi();
+        $response = $ebay->findItemsAdvanced($req, 1);
         
         return response()->json([
             'totalEntries' => $response->paginationOutput->totalEntries,
@@ -25,15 +31,15 @@ class ApiController extends Controller
     }
 
     public function process(Request $req){
-        $response = $this->ebaySearch($req, 1);
-
         $query = new Query();
-        $query->count = $response->paginationOutput->totalEntries;
+        $query->keyword = $req->keyword;
+        $query->seller = $req->seller;
+        $query->count = $req->productCt;
         $query->status = "init";
-        $query->csv_progress = 0;
-        $query->csv_progress_status = "init";
-        $query->img_progress = 0;
-        $query->img_progress_status = "init";
+        if ($req->addon_file || $req->insert_file){
+            $query->image_edit = 1;
+        }
+        $query->image_loc = $req->image_loc;
         $query->save();
 
         $condition = new Condition();
@@ -62,135 +68,55 @@ class ApiController extends Controller
         $condition->scale = $req->scale;
         $condition->addon_pos = $req->addon_pos;
         $condition->image_loc = $req->image_loc;
+
+        if ($req->addon_file){
+            $req->addon_file->move(public_path('img/custom'), $query->id."_addon.jpg");
+            $condition->addon_file = 'img/custom/'. $query->id."_addon.jpg";
+        }
+        if ($req->insert_file){
+            $req->insert_file->move(public_path('img/custom'), $query->id."_insert.jpg");
+            $condition->insert_file = 'img/custom/'. $query->id."_insert.jpg";
+        }
+
         $condition->save();
 
-        // $items = array($response->searchResult->item);
+        $this->dispatch(new ProcessEbay($query));
 
-        // for($i = 2; $i <= $pageCt; $i++){
-        //     // $response = $this->ebaySearch($req, $i);
-        //     // array_push($items, $response->searchResult->item);
-        // }
-
-        // $current_timestamp = Carbon::now()->timestamp;
-        // $csvfile = fopen($current_timestamp.'.csv', 'w');
-        // $headers = array('商品ID', '商品名', '出品者ID', '価格（日本円）', 'メイン画像パス', 
-        //     'サブ画像URL1', 'サブ画像URL2', 'サブ画像URL3', 'サブ画像URL4',
-        //     'サブ画像URL5', 'サブ画像URL6', 'サブ画像URL7', 'サブ画像URL8');
-        // fputcsv($csvfile, $headers);
-        // foreach($items as $page){
-        //     foreach($page as $item){
-        //         $line = array(
-        //             $item->itemId,
-        //             $item->title,
-        //             $item->sellerInfo->sellerUserName,
-        //             $item->sellingStatus->currentPrice->value,
-        //         );
-        //         fputcsv($csvfile, $line);
-        //     }
-        // }
-        // fclose($csvfile);
-
-        // return response()->json([
-        //     'pageCt' => count($items)
-        // ]);
+        return response()->json(['id' => $query->id]);
     }
 
-    public function getSingleItemImages(/*$item*/){
-        $config = Config::get('ebay.production');
-
-        $service = new \DTS\eBaySDK\Shopping\Services\ShoppingService([
-            'credentials' => $config['credentials'],
-        ]);
-        
-        $request = new \DTS\eBaySDK\Shopping\Types\GetSingleItemRequestType();
-        // $request->ItemID = $item->itemId;
-        $request->ItemID = '303176405302';
-        // $request->IncludeSelector = 'ItemSpecifics,Variations,Compatibility,Details';
-
-        $response = $service->getSingleItem($request);
-        dd($response);
+    public function getHistory(){
+        return response()->json(['history' => Query::all()]);
     }
 
-    public function ebaySearch($req, $page){
-        $config = Config::get('ebay.production');
-
-        $service = new Services\FindingService([
-            'credentials' => $config['credentials'],
-            'globalId'    => $req->site
-        ]);
-
-        $request = new Types\FindItemsAdvancedRequest();
-        $request->keywords = $req->keyword;
-
-        $arr_condition = [];
-        if ($req->proType1) array_push($arr_condition, 'New');
-        if ($req->proType2) array_push($arr_condition, 'Used');
-        if ($req->proType3) array_push($arr_condition, 'Unspecified');
-
-        if ($req->proType1 || $req->proType2 || $req->proType3){
-            $request->itemFilter[] = new Types\ItemFilter([
-                'name' => 'Condition',
-                'value' => $arr_condition
-            ]);
+    public function removeHistory(Request $req){
+        foreach($req->ids as $id){
+            $query = Query::find($id);
+            $this->deleteDir(public_path('/downloads/'.$query->id));
+            if ($query != null){
+                $query->condition->delete();
+                $query->delete();
+            }
         }
+        event(new QueryChanged());
+        return response()->json(['data' => $req->ids]);
+    }
 
-        if ($req->price_from) {
-            $request->itemFilter[] = new Types\ItemFilter([
-                'name' => 'MinPrice',
-                'value' => [$req->price_from]
-            ]);
+    public function deleteDir($dirPath) {
+        if (! is_dir($dirPath)) {
+            throw new InvalidArgumentException("$dirPath must be a directory");
         }
-
-        if ($req->price_to) {
-            $request->itemFilter[] = new Types\ItemFilter([
-                'name' => 'MaxPrice',
-                'value' => [$req->price_to]
-            ]);
+        if (substr($dirPath, strlen($dirPath) - 1, 1) != '/') {
+            $dirPath .= '/';
         }
-        if ($req->qty_from) {
-            $request->itemFilter[] = new Types\ItemFilter([
-                'name' => 'MinQuantity',
-                'value' => [$req->qty_from]
-            ]);
+        $files = glob($dirPath . '*', GLOB_MARK);
+        foreach ($files as $file) {
+            if (is_dir($file)) {
+                self::deleteDir($file);
+            } else {
+                unlink($file);
+            }
         }
-        if ($req->qty_to){
-            $request->itemFilter[] = new Types\ItemFilter([
-                'name' => 'MaxQuantity',
-                'value' => [$req->qty_to]
-            ]);
-        }
-        if ($req->worldwide) {
-            $request->itemFilter[] = new Types\ItemFilter([
-                'name' => 'LocatedIn',
-                'value' => ['WorldWide']
-            ]);
-        }
-        if ($req->japan) {
-            $request->itemFilter[] = new Types\ItemFilter([
-                'name' => 'AvailableTo',
-                'value' => ['JP']
-            ]);
-        }
-        if ($req->seller) {
-            $request->itemFilter[] = new Types\ItemFilter([
-                'name' => 'Seller',
-                'value' => [$req->seller]
-            ]);
-        }
-        
-        $request->itemFilter[] = new Types\ItemFilter([
-            'name' => 'Currency',
-            'value' => ['USD']
-        ]);
-        $request->sortOrder = 'CurrentPriceHighest';
-        
-        $request->paginationInput = new Types\PaginationInput();
-        $request->paginationInput->entriesPerPage = 100;
-        $request->paginationInput->pageNumber = $page;
-
-        // $request->outputSelector = ['SellerInfo', 'GalleryInfo'];
-
-        $response = $service->findItemsAdvanced($request);
-        return $response;
+        rmdir($dirPath);
     }
 }

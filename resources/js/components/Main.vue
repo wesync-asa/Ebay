@@ -55,7 +55,7 @@
                     </div>
                 </div>
                 <div class="row form-group">
-                    <label for="" class="col-sm-4 col-form-label text-md-right">価格（USD)</label>
+                    <label for="" class="col-sm-4 col-form-label text-md-right">価格（USD）</label>
                     <div class="col-sm-8">
                         <input v-model="price_from" type="text" class="form-control" style="width: 48%;display: inline-block;" name="price_from" />  ~
                         <input v-model="price_to" type="text" class="form-control" style="width: 48%;display: inline-block;" name="price_to"/>
@@ -126,29 +126,29 @@
             <h3>CSV価格計算</h3>
             <form class="form-horizontal">
                 <div class="row form-group">
-                    <label for="" class="col-sm-4 col-form-label text-md-right">加算定額（USD)</label>
+                    <label for="" class="col-sm-4 col-form-label text-md-right">加算定額（USD）</label>
                     <div class="col-sm-6">
-                        <input v-model="diff" type="text" class="form-control" name="" value="" />
+                        <input v-model="diff" type="number" class="form-control" name="" value="" min="0.1" max="10.0" step="0.1" />
                     </div>
                 </div>
                 <div class="row form-group">
                     <label for="" class="col-sm-4 col-form-label text-md-right">乗算係数</label>
                     <div class="col-sm-6">
-                        <input v-model="multiply" type="text" class="form-control" name="" value="" />
+                        <input v-model="multiply" type="number" class="form-control" name="" value="" />
                     </div>
                 </div>
                 <div class="row form-group">
-                    <label for="" class="col-sm-4 col-form-label text-md-right">為替レート（円)</label>
+                    <label for="" class="col-sm-4 col-form-label text-md-right">為替レート（ 円 ）</label>
                     <div class="col-sm-6">
-                        <input v-model="exrate" type="text" class="form-control" name="" value="" />
+                        <input v-model="exrate" type="number" class="form-control" name="" value="" step="0.1"/>
                     </div>
                 </div>
                 <div class="row form-group">
                     <div class="col-sm-4"><div align="right" for="ebay_site">切り上げ</div></div>
                     <div class="col-sm-6">
-                        <label><input v-model="unit" type="radio" value="10" checked>10の位</label>
-                        <label><input v-model="unit" type="radio" value="100" checked>100の位</label>
-                        <label><input v-model="unit" type="radio" value="100" checked>1000の位</label>
+                        <label><input v-model="unit" type="radio" value="100" checked>10の位</label>
+                        <label><input v-model="unit" type="radio" value="1000" checked>100の位</label>
+                        <label><input v-model="unit" type="radio" value="10000" checked>1000の位</label>
                     </div>
                 </div>
             </form>
@@ -163,7 +163,7 @@
             <div class="row form-group">
                 <label for="" class="col-sm-4 col-form-label text-md-right">1商品あたりの画像数</label>
                 <div class="col-sm-6">
-                    <input v-model="image_limit" type="text" class="form-control" name="" value="" />
+                    <input v-model="image_limit" type="number" class="form-control" name="" value="" min="1" max="8" />
                 </div>
             </div>
         </div>
@@ -184,16 +184,15 @@
                 <label for="" class="col-sm-4 col-form-label text-md-right">基準点</label>
                 <div class="col-sm-6">
                     <select class="form-control" v-model="ref_point">
-                        <option value=""></option>
-                        <option value="1">左上</option>
-                        <option value="2">上</option>
-                        <option value="3">右上</option>
-                        <option value="4">左</option>
-                        <option value="5">中央</option>
-                        <option value="6">右</option>
-                        <option value="7">左下</option>
-                        <option value="8">下</option>
-                        <option value="9">右下</option>
+                        <option value="top-left">左上</option>
+                        <option value="top">上</option>
+                        <option value="top-right">右上</option>
+                        <option value="left">左</option>
+                        <option value="center">中央</option>
+                        <option value="right">右</option>
+                        <option value="bottom-left">左下</option>
+                        <option value="bottom">下</option>
+                        <option value="bottom-right">右下</option>
                     </select>
                 </div>
             </div>
@@ -214,7 +213,7 @@
                 </div>
             </div>
             <div class="row form-group">
-                <label for="" class="col-sm-4 col-form-label text-md-right">重ねる画像の大きさ（倍率)</label>
+                <label for="" class="col-sm-4 col-form-label text-md-right">重ねる画像の大きさ（倍率）</label>
                 <div class="col-sm-6">
                     <input v-model="scale" type="number" class="form-control" name="" value="" />
                 </div>
@@ -235,7 +234,7 @@
                 </div>
             </div>
             <div class="row form-group">
-                <label for="" class="col-sm-4 col-form-label text-md-right">画像を挿入する位置（画像の順番)</label>
+                <label for="" class="col-sm-4 col-form-label text-md-right">画像を挿入する位置（画像の順番）</label>
                 <div class="input-group col-sm-6" style="align-items:center">
                     <input v-model="addon_pos" type="number" class="form-control" name="" value="" />
                     <span>番目</span>
@@ -253,8 +252,8 @@
             <div class="row form-group">
                 <div class="col-sm-4"><div align="right" for="ebay_site">画像保存方法</div></div>
                 <div class="col-sm-8">
-                    <label class="radio-inline"><input v-model="image_loc" type="radio" name="imgradio" value="server">そのままサーバーへ保存 </label>
-                    <label class="radio-inline"><input v-model="image_loc" type="radio" name="imgradio" value="zip">25MBずつzipファイルにする</label>
+                    <label class="radio-inline"><input v-model="image_loc" type="radio" name="imgradio" value="0">そのままサーバーへ保存 </label>
+                    <label class="radio-inline"><input v-model="image_loc" type="radio" name="imgradio" value="1">25MBずつzipファイルにする</label>
                 </div>
             </div>
             <div class="row form-group">
@@ -264,7 +263,9 @@
                     </div>
                 </div>
                 <div class="col-sm-8">
-                    <button v-on:click="process"  type="button" class="btn btn-primary">ファイル生成を開始</button>
+                    <button v-on:click="process"  type="button" class="btn btn-primary">ファイル生成を開始
+                        <i v-if="this.processing" class="fa fa-refresh fa-spin"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -276,7 +277,7 @@
         <div class="col-sm-8">
             <h3>処理ステータス</h3>
             <div class="form-group">
-                <button type="button" class="btn btn-primary">削除</button>
+                <button type="button" class="btn btn-primary" v-on:click="removeHistory">削除</button>
             </div>
             <table class="table table-striped">
                 <thead>
@@ -293,50 +294,27 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td><input type="checkbox" value=""></td>
-                        <td>2019/9/6 13:37</td>
-                        <td>未処理</td>
-                        <td>vintage vase</td>
-                        <td></td>
-                        <td>3404</td>
-                        <td>有</td>
-                        <td> サーバー</td>
-                        <td><button type="button" class="btn btn-primary">ダウンロード</button></td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox" value=""></td>
-                        <td>2019/9/6 13:37</td>
-                        <td>未処理</td>
-                        <td>vintage vase</td>
-                        <td></td>
-                        <td>3404</td>
-                        <td>有</td>
-                        <td> サーバー</td>
-                        <td><button type="button" class="btn btn-primary">ダウンロード</button></td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox" value=""></td>
-                        <td>2019/9/6 13:37</td>
-                        <td>未処理</td>
-                        <td>vintage vase</td>
-                        <td></td>
-                        <td>3404</td>
-                        <td>有</td>
-                        <td> サーバー</td>
-                        <td><button type="button" class="btn btn-primary">ダウンロード</button></td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox" value=""></td>
-                        <td>2019/9/6 13:37</td>
-                        <td>未処理</td>
-                        <td>vintage vase</td>
-                        <td></td>
-                        <td>3404</td>
-                        <td>有</td>
-                        <td> サーバー</td>
-                        <td><button type="button" class="btn btn-primary">ダウンロード</button></td>
-                    </tr>
+                    <template v-for="(item, index) in history">
+                        <tr v-bind:key="index">
+                            <td><input type="checkbox" 
+                                v-model="remove_check" 
+                                :checked="remove_check.indexOf(+item.id)>-1"
+                                :value="item.id"></td>
+                            <td>{{item.created_at}}</td>
+                            <td v-if="item.status === 'init'">未処理</td>
+                            <td v-if="item.status === 'process'">実行中</td>
+                            <td v-if="item.status === 'finish'">完了</td>
+                            <td v-if="item.status === 'failure'">失敗</td>
+                            <td>{{item.keyword}}</td>
+                            <td>{{item.seller}}</td>
+                            <td>{{item.count}}</td>
+                            <td v-if="item.image_edit == 1">有</td>
+                            <td v-if="item.image_edit != 1">無</td>
+                            <td v-if="item.image_loc === 0">サーバー</td>
+                            <td v-if="item.image_loc === 1">zip</td>
+                            <td><button v-on:click="download(item.id)" type="button" class="btn btn-primary">ダウンロード</button></td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>
@@ -347,6 +325,7 @@
 
 <script>
     import axios from 'axios';
+    
     export default {
         data() {
             return {
@@ -356,11 +335,11 @@
                 processing: false,
                 keyword: "Harry Potter",
                 seller: "",
-                proType1: "",
+                proType1: true,
                 proType2: "",
                 proType3: "",
                 price_from: "1000",
-                price_to: "1500",
+                price_to: "1000",
                 qty_from: "",
                 qty_to: "",
                 worldwide: "",
@@ -368,25 +347,50 @@
                 sel_category_1: "",
                 sel_category_2: "",
                 sel_category_3: "",
-                diff: "",
-                multiply: "",
-                exrate: "",
-                unit: "",
-                image_limit: "",
-                ref_point: "",
-                off_x: "",
-                off_y: "",
-                scale: "",
-                addon_pos: "",
+                diff: "2.5",
+                multiply: "5",
+                exrate: "106.5",
+                unit: "100",
+                image_limit: "1",
+                ref_point: "top-left",
+                off_x: "10",
+                off_y: "10",
+                scale: "50",
+                addon_pos: "5",
                 addon_file: "",
                 insert_file: "",
-                image_loc: "server"
+                image_loc: 0,
+                history: [],
+                remove_check: []
             }
         },
         mounted() {
-            console.log('Component mounted.')
+            this.updateHistory();
+            Echo.channel('queries').listen('QueryChanged', (e) => {
+                this.history = e.queries
+            })
         },
         methods: {
+            removeHistory(){
+                console.log(this.remove_check);
+                axios.post("http://127.0.0.1/api/remove",{
+                    ids: this.remove_check
+                }).then(response => {
+                    console.log(response);
+                }).catch(error => {
+
+                })
+            },
+            download(id){
+                window.open("http://localhost/downloads/" + id + "/result.csv", '_blank');
+            },
+            updateHistory(){
+                axios.get('http://127.0.0.1/api/history').then(response => {
+                    this.history = response.data.history
+                }).catch(error => {
+                    
+                })
+            },
             addOnPath(e){
                 this.addon_file = e.target.files[0];
             },
@@ -400,7 +404,7 @@
                 }
                 this.productCt = 0;
                 this.proLoading = true;
-                axios.post('http://localhost/ebay/public/api/getProductCount', {
+                axios.post('http://127.0.0.1/api/getProductCount', {
                     site: this.site,
                     keyword: this.keyword,
                     proType1: this.proType1,
@@ -414,7 +418,7 @@
                     japan: this.japan,
                     seller: this.seller
                 }).then(response => {
-                    console.log(response);
+                    console.log(response.data.totalEntries);
                     this.productCt = response.data.totalEntries;
                     this.proLoading = false;
                 }).catch(response => {
@@ -422,13 +426,12 @@
                 })
             },
             process(e){
-                if (this.processing){
-                    return;
-                }
-                this.productCt = 0;
+                if (this.processing) return;
+                if (this.productCt == 0) return;
                 this.processing = true;
                 let formData = new FormData();
                 //search field
+                formData.append('productCt', this.productCt);
                 formData.append('site', this.site);
                 formData.append('keyword', this.keyword);
                 formData.append('seller', this.seller);
@@ -456,13 +459,13 @@
                 formData.append('addon_file', this.addon_file);
                 formData.append('insert_file', this.insert_file);
                 formData.append('image_loc', this.image_loc);
-                axios.post('http://localhost/ebay/public/api/process', 
+                axios.post('http://127.0.0.1/api/process', 
                     formData,
                     {
                         'Content-Type': 'multipart/form-data'
                     }
                 ).then(response => {
-                    console.log(response);
+                    this.updateHistory();
                     this.processing = false;
                 }).catch(response => {
                     this.processing = false;

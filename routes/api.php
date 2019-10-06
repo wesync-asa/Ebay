@@ -20,4 +20,5 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('getProductCount', 'ApiController@getProductCount');
 Route::post('process', 'ApiController@process');
 
-Route::get('single', 'ApiController@getSingleItemImages');
+Route::get('history', 'ApiController@getHistory');
+Route::post('remove', 'ApiController@removeHistory');

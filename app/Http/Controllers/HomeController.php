@@ -1,15 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Support\Facades\Config;
-
-use Illuminate\Http\Request;
-// use \DTS\eBaySDK\OAuth\Services;
-// use \DTS\eBaySDK\OAuth\Types;
-use \DTS\eBaySDK\Constants;
-use \DTS\eBaySDK\Finding\Services;
-use \DTS\eBaySDK\Finding\Types;
-use \DTS\eBaySDK\Finding\Enums;
+use Zip;
 
 class HomeController extends Controller
 {
@@ -33,100 +25,43 @@ class HomeController extends Controller
         return view('home');
     }
 
-    public function testEbay()
-    {
-        $config = Config::get('ebay.production');
-
-        $service = new Services\FindingService([
-            'credentials' => $config['credentials'],
-            'globalId'    => Constants\GlobalIds::US
-        ]);
-        $request = new Types\FindItemsAdvancedRequest();
-        $request->keywords = 'Harry Potter';
-        /**
-         * Filter results to only include auction items or auctions with buy it now.
-         */
-        $itemFilter = new Types\ItemFilter();
-        $itemFilter->name = 'ListingType';
-        $itemFilter->value[] = 'Auction';
-        $itemFilter->value[] = 'AuctionWithBIN';
-        $request->itemFilter[] = $itemFilter;
-        /**
-         * Add additional filters to only include items that fall in the price range of $1 to $10.
-         *
-         * Notice that we can take advantage of the fact that the SDK allows object properties to be assigned via the class constructor.
-         */
-        $request->itemFilter[] = new Types\ItemFilter([
-            'name' => 'MinPrice',
-            'value' => ['1.00']
-        ]);
-        $request->itemFilter[] = new Types\ItemFilter([
-            'name' => 'MaxPrice',
-            'value' => ['10.00']
-        ]);
-        /**
-         * Sort the results by current price.
-         */
-        $request->sortOrder = 'CurrentPriceHighest';
-        /**
-         * Limit the results to 10 items per page and start at page 1.
-         */
-        $request->paginationInput = new Types\PaginationInput();
-        $request->paginationInput->entriesPerPage = 10;
-        $request->paginationInput->pageNumber = 1;
-        /**
-         * Send the request.
-         */
+    public function test(){
+        // $img = Image::make('img/custom/113708159402_0.jpg');
+        // // $img = $img->widen($img->width() / 2);
+        // $img->insert('img/custom/images.png', 'top-left', 10, 10);
+        // $img->save('img/custom/result.jpg');
         
-        $response = $service->findItemsAdvanced($request);
-        if (isset($response->errorMessage)) {
-            foreach ($response->errorMessage->error as $error) {
-                printf(
-                    "%s: %s\n\n",
-                    $error->severity=== Enums\ErrorSeverity::C_ERROR ? 'Error' : 'Warning',
-                    $error->message
-                );
+        // echo $img->response();
+
+        // $a = array(1, 2, 3);
+        // $b = 4;
+        // array_splice($a, 8, 0, $b);
+        // dd($a);
+        // return view('test');
+        $output = "file";
+        $files = array('1.mp3', '2.mp3', '3.mp3', '4.mp3', '5.mp3', '6.mp3', '7.mp3', '8.mp3', '9.mp3', '10.mp3');
+        $this->zipFiles($files, $output);
+    }
+
+    public function zipFiles($files, $output){
+        $size = 0;
+        $limit = 25 * 1024 * 1024;
+        
+        $zip_idx = 0;
+        $file_idx = 0;
+        while(true){
+            if ($file_idx > count($files) - 1) break;
+            $zip = Zip::create($output.'_'.$zip_idx.'.zip');
+            while($size < $limit){
+                if ($file_idx > count($files) - 1) break;
+                $size += filesize($files[$file_idx]);
+                if ($size > $limit) break;
+                $zip->add($files[$file_idx]);
+                $file_idx++;
             }
-        }
-        /**
-         * Output the result of the search.
-         */
-        printf(
-            "%s items found over %s pages.\n\n",
-            $response->paginationOutput->totalEntries,
-            $response->paginationOutput->totalPages
-        );
-        echo "==================\nResults for page 1\n==================\n";
-        if ($response->ack !== 'Failure') {
-            foreach ($response->searchResult->item as $item) {
-                printf(
-                    "(%s) %s: %s %.2f\n",
-                    $item->itemId,
-                    $item->title,
-                    $item->sellingStatus->currentPrice->currencyId,
-                    $item->sellingStatus->currentPrice->value
-                );
-            }
-        }
-        /**
-         * Paginate through 2 more pages worth of results.
-         */
-        $limit = min($response->paginationOutput->totalPages, 3);
-        for ($pageNum = 2; $pageNum <= $limit; $pageNum++) {
-            $request->paginationInput->pageNumber = $pageNum;
-            $response = $service->findItemsAdvanced($request);
-            echo "==================\nResults for page $pageNum\n==================\n";
-            if ($response->ack !== 'Failure') {
-                foreach ($response->searchResult->item as $item) {
-                    printf(
-                        "(%s) %s: %s %.2f\n",
-                        $item->itemId,
-                        $item->title,
-                        $item->sellingStatus->currentPrice->currencyId,
-                        $item->sellingStatus->currentPrice->value
-                    );
-                }
-            }
+            $zip->close();
+            $zip_idx++;
+            $size = 0;
         }
     }
 }
