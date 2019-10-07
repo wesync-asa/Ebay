@@ -389,7 +389,7 @@
         methods: {
             onCategory1(){
                 this.catLoading2 = true;
-                axios.post("http://127.0.0.1/api/category",{
+                axios.post("http://blueseason.raindrop.jp/api/category",{
                     id: this.sel_category_1
                 }).then(response => {
                     this.main_cats = response.data.cats;
@@ -400,7 +400,7 @@
             },
             onCategory2(){
                 this.catLoading3 = true;
-                axios.post("http://127.0.0.1/api/category",{
+                axios.post("http://blueseason.raindrop.jp/api/category",{
                     id: this.sel_category_2
                 }).then(response => {
                     this.sub_cats = response.data.cats;
@@ -411,7 +411,7 @@
             },
             loadTopCategory(){
                 this.catLoading1 = true;
-                axios.post("http://127.0.0.1/api/category",{
+                axios.post("http://blueseason.raindrop.jp/api/category",{
                     id: '-1'
                 }).then(response => {
                     this.top_cats = response.data.cats;
@@ -421,7 +421,7 @@
                 })
             },
             removeHistory(){
-                axios.post("http://127.0.0.1/api/remove",{
+                axios.post("http://blueseason.raindrop.jp/api/remove",{
                     ids: this.remove_check
                 }).then(response => {
 
@@ -430,10 +430,10 @@
                 })
             },
             download(id){
-                window.open("http://localhost/downloads/" + id + "/result.csv", '_blank');
+                window.open("http://blueseason.raindrop.jp/downloads/" + id + "/result.csv", '_blank');
             },
             updateHistory(){
-                axios.get('http://127.0.0.1/api/history').then(response => {
+                axios.get('http://blueseason.raindrop.jp/api/history').then(response => {
                     this.history = response.data.history
                 }).catch(error => {
                     
@@ -453,7 +453,7 @@
                 this.productCt = 0;
                 this.proLoading = true;
                 let cat = this.sel_category_3 == "" ? this.sel_category_2 : this.sel_category_3;
-                axios.post('http://127.0.0.1/api/getProductCount', {
+                axios.post('http://blueseason.raindrop.jp/api/getProductCount', {
                     site: this.site,
                     keyword: this.keyword,
                     proType1: this.proType1,
