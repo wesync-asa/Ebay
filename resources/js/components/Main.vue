@@ -435,6 +435,10 @@
                 }).then(response => {
                     // window.open("http://blueseason.raindrop.jp/downloads/" + id + "/"+ id +".csv", '_blank');
                     console.log(response);
+                    var files = response.data.files;
+                    for (index = 0; index < files.length; index++){
+                        window.open(files[index], '_blank');
+                    }
                 }).catch(error => {
 
                 })
