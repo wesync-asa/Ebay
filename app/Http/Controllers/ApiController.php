@@ -80,7 +80,7 @@ class ApiController extends Controller
     }
 
     public function getHistory(){
-        return response()->json(['history' => Query::where('user_id', Auth::id)->get()]);
+        return response()->json(['history' => Query::where('user_id', Auth::id())->get()]);
     }
 
     public function removeHistory(Request $req){
