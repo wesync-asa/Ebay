@@ -430,7 +430,14 @@
                 })
             },
             download(id){
-                window.open("http://blueseason.raindrop.jp/downloads/" + id + "/result.csv", '_blank');
+                axios.post("http://blueseason.raindrop.jp/api/download", {
+                    id: id
+                }).then(response => {
+                    // window.open("http://blueseason.raindrop.jp/downloads/" + id + "/"+ id +".csv", '_blank');
+                    console.log(response);
+                }).catch(error => {
+
+                })
             },
             updateHistory(){
                 axios.get('http://blueseason.raindrop.jp/api/history').then(response => {

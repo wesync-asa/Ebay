@@ -124,4 +124,20 @@ class ApiController extends Controller
         array_shift($result);
         return response()->json(['cats' => $result]);
     }
+
+    public function download(Request $req){
+        $id = request()->id;
+        $query = Query::find($id);
+        if ($query->image_loc == "0") {
+            return response()->json(['files' => [asset("downloads/".$id."/".$id.".csv")]]);
+        } else {
+            $idx = 0;
+            $zipArray = array();
+            while(file_exists(public_path("downloads/".$id."/".$id."_".$idx.".zip"))){
+                array_push($zipArray, asset("downloads/".$id."/".$id."_".$idx.".zip"));
+                $idx++;
+            }
+            return response()->json(['files' => $zipArray]);
+        }
+    }
 }
