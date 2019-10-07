@@ -1,15 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use Carbon\Carbon;
-use Image;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Http\Request;
-
-use \DTS\eBaySDK\Constants;
-use \DTS\eBaySDK\Finding\Services;
-use \DTS\eBaySDK\Finding\Types;
-use \DTS\eBaySDK\Finding\Enums;
 
 use App\Models\Query;
 use App\Models\Condition;
@@ -56,7 +48,7 @@ class ApiController extends Controller
         $condition->qty_to = $req->qty_to;
         $condition->worldwide = $req->worldwide;
         $condition->japan = $req->japan;
-        // $condition->category = $req->category;
+        $condition->category = $req->category;
         $condition->diff = $req->diff;
         $condition->multiply = $req->multiply;
         $condition->exrate = $req->exrate;
@@ -118,5 +110,18 @@ class ApiController extends Controller
             }
         }
         rmdir($dirPath);
+    }
+
+    public function getCategory(Request $req){
+        $id = $req->id;
+        $ebay = new EbayApi();
+        $response = $ebay->getCategoryInfo($id);
+        $result = array();
+        
+        foreach($response as $cat){
+            array_push($result, ['id' => $cat->CategoryID, 'name' => $cat->CategoryName]);
+        }
+        array_shift($result);
+        return response()->json(['cats' => $result]);
     }
 }

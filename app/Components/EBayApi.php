@@ -22,6 +22,8 @@ class EBayApi {
         if ($req->proType2) array_push($arr_condition, 'Used');
         if ($req->proType3) array_push($arr_condition, 'Unspecified');
 
+        if ($req->category) $request->categoryId = [$req->category];
+
         if ($req->proType1 || $req->proType2 || $req->proType3){
             $request->itemFilter[] = new Types\ItemFilter([
                 'name' => 'Condition',
@@ -101,5 +103,20 @@ class EBayApi {
 
         $response = $service->getSingleItem($request);
         return $response->Item->PictureURL;
+    }
+
+    public function getCategoryInfo($id){
+        $config = Config::get('ebay.production');
+
+        $service = new \DTS\eBaySDK\Shopping\Services\ShoppingService([
+            'credentials' => $config['credentials']
+        ]);
+        $request = new \DTS\eBaySDK\Shopping\Types\GetCategoryInfoRequestType();
+        $request->CategoryID = $id;
+        $request->IncludeSelector = 'ChildCategories';
+
+        $response = $service->getCategoryInfo($request);
+
+        return $response->CategoryArray->Category;
     }
 }

@@ -81,23 +81,32 @@
                     </div>
                 </div>
                 <div class="row form-group">
-                    <label for="" class="col-sm-4 col-form-label text-md-right">カテゴリー LEVEL1</label>
+                    <label for="" class="col-sm-4 col-form-label text-md-right"><i v-if="this.catLoading1" class="fa fa-refresh fa-spin"></i>カテゴリー LEVEL1</label>
                     <div class="col-sm-8">
-                        <select class="form-control" v-model="sel_category_1" name="category_label_1">
+                        <select class="form-control" v-model="sel_category_1" name="category_label_1" @change="onCategory1">
+                            <template v-for="(cat, index) in top_cats">
+                                <option v-bind:key="index" :value="cat.id">{{cat.name}}</option>
+                            </template>
                         </select>
                     </div>
                 </div>
                 <div class="row form-group">
-                    <label for="" class="col-sm-4 col-form-label text-md-right">カテゴリー LEVEL3</label>
+                    <label for="" class="col-sm-4 col-form-label text-md-right"><i v-if="this.catLoading2" class="fa fa-refresh fa-spin"></i>カテゴリー LEVEL2</label>
                     <div class="col-sm-8">
-                        <select class="form-control" v-model="sel_category_2" name="category_label_2">
+                        <select class="form-control" v-model="sel_category_2" name="category_label_2" @change="onCategory2">
+                            <template v-for="(cat, index) in main_cats">
+                                <option v-bind:key="index" :value="cat.id">{{cat.name}}</option>
+                            </template>
                         </select>
                     </div>
                 </div>
                 <div class="row form-group">
-                    <label for="" class="col-sm-4 col-form-label text-md-right">カテゴリー LEVEL3</label>
+                    <label for="" class="col-sm-4 col-form-label text-md-right"><i v-if="this.catLoading3" class="fa fa-refresh fa-spin"></i>カテゴリー LEVEL3</label>
                     <div class="col-sm-8">
                         <select class="form-control" v-model="sel_category_3" name="category_label_3">
+                            <template v-for="(cat, index) in sub_cats">
+                                <option v-bind:key="index" :value="cat.id">{{cat.name}}</option>
+                            </template>
                         </select>
                     </div>
                 </div>
@@ -335,11 +344,11 @@
                 processing: false,
                 keyword: "Harry Potter",
                 seller: "",
-                proType1: true,
+                proType1: "",
                 proType2: "",
                 proType3: "",
-                price_from: "1000",
-                price_to: "1000",
+                price_from: "",
+                price_to: "",
                 qty_from: "",
                 qty_to: "",
                 worldwide: "",
@@ -347,36 +356,75 @@
                 sel_category_1: "",
                 sel_category_2: "",
                 sel_category_3: "",
-                diff: "2.5",
-                multiply: "5",
-                exrate: "106.5",
-                unit: "100",
-                image_limit: "1",
-                ref_point: "top-left",
-                off_x: "10",
-                off_y: "10",
-                scale: "50",
-                addon_pos: "5",
+                diff: "",
+                multiply: "",
+                exrate: "",
+                unit: "",
+                image_limit: "",
+                ref_point: "",
+                off_x: "",
+                off_y: "",
+                scale: "",
+                addon_pos: "",
                 addon_file: "",
                 insert_file: "",
                 image_loc: 0,
                 history: [],
-                remove_check: []
+                remove_check: [],
+                top_cats: [],
+                main_cats: [],
+                sub_cats: [],
+                catLoading1: false,
+                catLoading2: false,
+                catLoading3: false,
             }
         },
         mounted() {
             this.updateHistory();
+            this.loadTopCategory();
             Echo.channel('queries').listen('QueryChanged', (e) => {
                 this.history = e.queries
             })
         },
         methods: {
+            onCategory1(){
+                this.catLoading2 = true;
+                axios.post("http://127.0.0.1/api/category",{
+                    id: this.sel_category_1
+                }).then(response => {
+                    this.main_cats = response.data.cats;
+                    this.catLoading2 = false;
+                }).catch(response => {
+                    this.catLoading2 = false;
+                })
+            },
+            onCategory2(){
+                this.catLoading3 = true;
+                axios.post("http://127.0.0.1/api/category",{
+                    id: this.sel_category_2
+                }).then(response => {
+                    this.sub_cats = response.data.cats;
+                    this.catLoading3 = false;
+                }).catch(response => {
+                    this.catLoading3 = false;
+                })
+            },
+            loadTopCategory(){
+                this.catLoading1 = true;
+                axios.post("http://127.0.0.1/api/category",{
+                    id: '-1'
+                }).then(response => {
+                    this.top_cats = response.data.cats;
+                    this.catLoading1 = false;
+                }).catch(response => {
+                    this.catLoading1 = false;
+                })
+            },
             removeHistory(){
-                console.log(this.remove_check);
                 axios.post("http://127.0.0.1/api/remove",{
                     ids: this.remove_check
                 }).then(response => {
-                    console.log(response);
+
                 }).catch(error => {
 
                 })
@@ -404,6 +452,7 @@
                 }
                 this.productCt = 0;
                 this.proLoading = true;
+                let cat = this.sel_category_3 == "" ? this.sel_category_2 : this.sel_category_3;
                 axios.post('http://127.0.0.1/api/getProductCount', {
                     site: this.site,
                     keyword: this.keyword,
@@ -416,7 +465,8 @@
                     qty_to: this.qty_to,
                     worldwide: this.worldwide,
                     japan: this.japan,
-                    seller: this.seller
+                    seller: this.seller,
+                    category: cat
                 }).then(response => {
                     console.log(response.data.totalEntries);
                     this.productCt = response.data.totalEntries;
@@ -430,6 +480,7 @@
                 if (this.productCt == 0) return;
                 this.processing = true;
                 let formData = new FormData();
+                let cat = this.sel_category_3 == "" ? this.sel_category_2 : this.sel_category_3;
                 //search field
                 formData.append('productCt', this.productCt);
                 formData.append('site', this.site);
@@ -444,6 +495,7 @@
                 formData.append('qty_to', this.qty_to);
                 formData.append('worldwide', this.worldwide);
                 formData.append('japan', this.japan);
+                formData.append('category', cat);
                 //csv field
                 formData.append('diff', this.diff);
                 formData.append('multiply', this.multiply);

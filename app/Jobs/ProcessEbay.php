@@ -8,8 +8,6 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Config;
-use \DTS\eBaySDK\Finding\Services;
-use \DTS\eBaySDK\Finding\Types;
 use App\Components\EBayApi;
 
 use App\Models\Query;

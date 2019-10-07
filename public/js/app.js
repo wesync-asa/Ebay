@@ -59219,6 +59219,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -59231,11 +59240,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             processing: false,
             keyword: "Harry Potter",
             seller: "",
-            proType1: true,
+            proType1: "",
             proType2: "",
             proType3: "",
-            price_from: "1000",
-            price_to: "1000",
+            price_from: "",
+            price_to: "",
             qty_from: "",
             qty_to: "",
             worldwide: "",
@@ -59243,49 +59252,92 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             sel_category_1: "",
             sel_category_2: "",
             sel_category_3: "",
-            diff: "2.5",
-            multiply: "5",
-            exrate: "106.5",
-            unit: "100",
-            image_limit: "1",
-            ref_point: "top-left",
-            off_x: "10",
-            off_y: "10",
-            scale: "50",
-            addon_pos: "5",
+            diff: "",
+            multiply: "",
+            exrate: "",
+            unit: "",
+            image_limit: "",
+            ref_point: "",
+            off_x: "",
+            off_y: "",
+            scale: "",
+            addon_pos: "",
             addon_file: "",
             insert_file: "",
             image_loc: 0,
             history: [],
-            remove_check: []
+            remove_check: [],
+            top_cats: [],
+            main_cats: [],
+            sub_cats: [],
+            catLoading1: false,
+            catLoading2: false,
+            catLoading3: false
         };
     },
     mounted: function mounted() {
         var _this = this;
 
         this.updateHistory();
+        this.loadTopCategory();
         Echo.channel('queries').listen('QueryChanged', function (e) {
             _this.history = e.queries;
         });
     },
 
     methods: {
+        onCategory1: function onCategory1() {
+            var _this2 = this;
+
+            this.catLoading2 = true;
+            __WEBPACK_IMPORTED_MODULE_0_axios___default.a.post("http://127.0.0.1/api/category", {
+                id: this.sel_category_1
+            }).then(function (response) {
+                _this2.main_cats = response.data.cats;
+                _this2.catLoading2 = false;
+            }).catch(function (response) {
+                _this2.catLoading2 = false;
+            });
+        },
+        onCategory2: function onCategory2() {
+            var _this3 = this;
+
+            this.catLoading3 = true;
+            __WEBPACK_IMPORTED_MODULE_0_axios___default.a.post("http://127.0.0.1/api/category", {
+                id: this.sel_category_2
+            }).then(function (response) {
+                _this3.sub_cats = response.data.cats;
+                _this3.catLoading3 = false;
+            }).catch(function (response) {
+                _this3.catLoading3 = false;
+            });
+        },
+        loadTopCategory: function loadTopCategory() {
+            var _this4 = this;
+
+            this.catLoading1 = true;
+            __WEBPACK_IMPORTED_MODULE_0_axios___default.a.post("http://127.0.0.1/api/category", {
+                id: '-1'
+            }).then(function (response) {
+                _this4.top_cats = response.data.cats;
+                _this4.catLoading1 = false;
+            }).catch(function (response) {
+                _this4.catLoading1 = false;
+            });
+        },
         removeHistory: function removeHistory() {
-            console.log(this.remove_check);
             __WEBPACK_IMPORTED_MODULE_0_axios___default.a.post("http://127.0.0.1/api/remove", {
                 ids: this.remove_check
-            }).then(function (response) {
-                console.log(response);
-            }).catch(function (error) {});
+            }).then(function (response) {}).catch(function (error) {});
         },
         download: function download(id) {
             window.open("http://localhost/downloads/" + id + "/result.csv", '_blank');
         },
         updateHistory: function updateHistory() {
-            var _this2 = this;
+            var _this5 = this;
 
             __WEBPACK_IMPORTED_MODULE_0_axios___default.a.get('http://127.0.0.1/api/history').then(function (response) {
-                _this2.history = response.data.history;
+                _this5.history = response.data.history;
             }).catch(function (error) {});
         },
         addOnPath: function addOnPath(e) {
@@ -59295,7 +59347,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             this.insert_file = e.target.files[0];
         },
         productSearch: function productSearch(e) {
-            var _this3 = this;
+            var _this6 = this;
 
             e.preventDefault();
             if (this.proLoading) {
@@ -59303,6 +59355,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             }
             this.productCt = 0;
             this.proLoading = true;
+            var cat = this.sel_category_3 == "" ? this.sel_category_2 : this.sel_category_3;
             __WEBPACK_IMPORTED_MODULE_0_axios___default.a.post('http://127.0.0.1/api/getProductCount', {
                 site: this.site,
                 keyword: this.keyword,
@@ -59315,22 +59368,24 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 qty_to: this.qty_to,
                 worldwide: this.worldwide,
                 japan: this.japan,
-                seller: this.seller
+                seller: this.seller,
+                category: cat
             }).then(function (response) {
                 console.log(response.data.totalEntries);
-                _this3.productCt = response.data.totalEntries;
-                _this3.proLoading = false;
+                _this6.productCt = response.data.totalEntries;
+                _this6.proLoading = false;
             }).catch(function (response) {
-                _this3.proLoading = false;
+                _this6.proLoading = false;
             });
         },
         process: function process(e) {
-            var _this4 = this;
+            var _this7 = this;
 
             if (this.processing) return;
             if (this.productCt == 0) return;
             this.processing = true;
             var formData = new FormData();
+            var cat = this.sel_category_3 == "" ? this.sel_category_2 : this.sel_category_3;
             //search field
             formData.append('productCt', this.productCt);
             formData.append('site', this.site);
@@ -59345,6 +59400,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             formData.append('qty_to', this.qty_to);
             formData.append('worldwide', this.worldwide);
             formData.append('japan', this.japan);
+            formData.append('category', cat);
             //csv field
             formData.append('diff', this.diff);
             formData.append('multiply', this.multiply);
@@ -59363,10 +59419,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             __WEBPACK_IMPORTED_MODULE_0_axios___default.a.post('http://127.0.0.1/api/process', formData, {
                 'Content-Type': 'multipart/form-data'
             }).then(function (response) {
-                _this4.updateHistory();
-                _this4.processing = false;
+                _this7.updateHistory();
+                _this7.processing = false;
             }).catch(function (response) {
-                _this4.processing = false;
+                _this7.processing = false;
             });
         }
     }
@@ -59937,37 +59993,60 @@ var render = function() {
                 staticClass: "col-sm-4 col-form-label text-md-right",
                 attrs: { for: "" }
               },
-              [_vm._v("カテゴリー LEVEL1")]
+              [
+                this.catLoading1
+                  ? _c("i", { staticClass: "fa fa-refresh fa-spin" })
+                  : _vm._e(),
+                _vm._v("カテゴリー LEVEL1")
+              ]
             ),
             _vm._v(" "),
             _c("div", { staticClass: "col-sm-8" }, [
-              _c("select", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.sel_category_1,
-                    expression: "sel_category_1"
+              _c(
+                "select",
+                {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.sel_category_1,
+                      expression: "sel_category_1"
+                    }
+                  ],
+                  staticClass: "form-control",
+                  attrs: { name: "category_label_1" },
+                  on: {
+                    change: [
+                      function($event) {
+                        var $$selectedVal = Array.prototype.filter
+                          .call($event.target.options, function(o) {
+                            return o.selected
+                          })
+                          .map(function(o) {
+                            var val = "_value" in o ? o._value : o.value
+                            return val
+                          })
+                        _vm.sel_category_1 = $event.target.multiple
+                          ? $$selectedVal
+                          : $$selectedVal[0]
+                      },
+                      _vm.onCategory1
+                    ]
                   }
+                },
+                [
+                  _vm._l(_vm.top_cats, function(cat, index) {
+                    return [
+                      _c(
+                        "option",
+                        { key: index, domProps: { value: cat.id } },
+                        [_vm._v(_vm._s(cat.name))]
+                      )
+                    ]
+                  })
                 ],
-                staticClass: "form-control",
-                attrs: { name: "category_label_1" },
-                on: {
-                  change: function($event) {
-                    var $$selectedVal = Array.prototype.filter
-                      .call($event.target.options, function(o) {
-                        return o.selected
-                      })
-                      .map(function(o) {
-                        var val = "_value" in o ? o._value : o.value
-                        return val
-                      })
-                    _vm.sel_category_1 = $event.target.multiple
-                      ? $$selectedVal
-                      : $$selectedVal[0]
-                  }
-                }
-              })
+                2
+              )
             ])
           ]),
           _vm._v(" "),
@@ -59978,37 +60057,60 @@ var render = function() {
                 staticClass: "col-sm-4 col-form-label text-md-right",
                 attrs: { for: "" }
               },
-              [_vm._v("カテゴリー LEVEL3")]
+              [
+                this.catLoading2
+                  ? _c("i", { staticClass: "fa fa-refresh fa-spin" })
+                  : _vm._e(),
+                _vm._v("カテゴリー LEVEL2")
+              ]
             ),
             _vm._v(" "),
             _c("div", { staticClass: "col-sm-8" }, [
-              _c("select", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.sel_category_2,
-                    expression: "sel_category_2"
+              _c(
+                "select",
+                {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.sel_category_2,
+                      expression: "sel_category_2"
+                    }
+                  ],
+                  staticClass: "form-control",
+                  attrs: { name: "category_label_2" },
+                  on: {
+                    change: [
+                      function($event) {
+                        var $$selectedVal = Array.prototype.filter
+                          .call($event.target.options, function(o) {
+                            return o.selected
+                          })
+                          .map(function(o) {
+                            var val = "_value" in o ? o._value : o.value
+                            return val
+                          })
+                        _vm.sel_category_2 = $event.target.multiple
+                          ? $$selectedVal
+                          : $$selectedVal[0]
+                      },
+                      _vm.onCategory2
+                    ]
                   }
+                },
+                [
+                  _vm._l(_vm.main_cats, function(cat, index) {
+                    return [
+                      _c(
+                        "option",
+                        { key: index, domProps: { value: cat.id } },
+                        [_vm._v(_vm._s(cat.name))]
+                      )
+                    ]
+                  })
                 ],
-                staticClass: "form-control",
-                attrs: { name: "category_label_2" },
-                on: {
-                  change: function($event) {
-                    var $$selectedVal = Array.prototype.filter
-                      .call($event.target.options, function(o) {
-                        return o.selected
-                      })
-                      .map(function(o) {
-                        var val = "_value" in o ? o._value : o.value
-                        return val
-                      })
-                    _vm.sel_category_2 = $event.target.multiple
-                      ? $$selectedVal
-                      : $$selectedVal[0]
-                  }
-                }
-              })
+                2
+              )
             ])
           ]),
           _vm._v(" "),
@@ -60019,37 +60121,57 @@ var render = function() {
                 staticClass: "col-sm-4 col-form-label text-md-right",
                 attrs: { for: "" }
               },
-              [_vm._v("カテゴリー LEVEL3")]
+              [
+                this.catLoading3
+                  ? _c("i", { staticClass: "fa fa-refresh fa-spin" })
+                  : _vm._e(),
+                _vm._v("カテゴリー LEVEL3")
+              ]
             ),
             _vm._v(" "),
             _c("div", { staticClass: "col-sm-8" }, [
-              _c("select", {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.sel_category_3,
-                    expression: "sel_category_3"
+              _c(
+                "select",
+                {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.sel_category_3,
+                      expression: "sel_category_3"
+                    }
+                  ],
+                  staticClass: "form-control",
+                  attrs: { name: "category_label_3" },
+                  on: {
+                    change: function($event) {
+                      var $$selectedVal = Array.prototype.filter
+                        .call($event.target.options, function(o) {
+                          return o.selected
+                        })
+                        .map(function(o) {
+                          var val = "_value" in o ? o._value : o.value
+                          return val
+                        })
+                      _vm.sel_category_3 = $event.target.multiple
+                        ? $$selectedVal
+                        : $$selectedVal[0]
+                    }
                   }
+                },
+                [
+                  _vm._l(_vm.sub_cats, function(cat, index) {
+                    return [
+                      _c(
+                        "option",
+                        { key: index, domProps: { value: cat.id } },
+                        [_vm._v(_vm._s(cat.name))]
+                      )
+                    ]
+                  })
                 ],
-                staticClass: "form-control",
-                attrs: { name: "category_label_3" },
-                on: {
-                  change: function($event) {
-                    var $$selectedVal = Array.prototype.filter
-                      .call($event.target.options, function(o) {
-                        return o.selected
-                      })
-                      .map(function(o) {
-                        var val = "_value" in o ? o._value : o.value
-                        return val
-                      })
-                    _vm.sel_category_3 = $event.target.multiple
-                      ? $$selectedVal
-                      : $$selectedVal[0]
-                  }
-                }
-              })
+                2
+              )
             ])
           ]),
           _vm._v(" "),
