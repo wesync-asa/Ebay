@@ -83,6 +83,7 @@ class ProcessEbay implements ShouldQueue
             foreach($allitems as $items){
                 foreach($items as $item){
                     $price = ($item->sellingStatus->currentPrice->value + $condition->diff) * $condition->multiply * $condition->exrate;
+                    if (!$condition->unit) $condition->unit = 1;
                     $price = round($price / $condition->unit, 1, PHP_ROUND_HALF_UP) * $condition->unit;
                     $line = array(
                         $item->itemId,
