@@ -6,7 +6,7 @@ use \DTS\eBaySDK\Shopping\Services;
 use \DTS\eBaySDK\Shopping\Types;
 use Illuminate\Support\Facades\Config;
 USE App\Components\EBayApi;
-use GuzzleHttp\Psr7\Request;
+use App\Models\Query;
 
 class HomeController extends Controller
 {
@@ -30,7 +30,7 @@ class HomeController extends Controller
         return view('home');
     }
 
-    public function test(Request $req){
+    public function test(){
         
     }
 }

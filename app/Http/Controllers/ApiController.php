@@ -17,9 +17,11 @@ class ApiController extends Controller
     public function getProductCount(Request $req){
         $ebay = new EBayApi();
         $response = $ebay->findItemsAdvanced($req, 1);
+
         
         return response()->json([
             'totalEntries' => $response->paginationOutput->totalEntries,
+            'data' => $req->all()
         ]);
     }
 

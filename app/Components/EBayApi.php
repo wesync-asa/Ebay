@@ -18,13 +18,13 @@ class EBayApi {
         $request->keywords = $req->keyword;
 
         $arr_condition = [];
-        if ($req->proType1) array_push($arr_condition, 'New');
-        if ($req->proType2) array_push($arr_condition, 'Used');
-        if ($req->proType3) array_push($arr_condition, 'Unspecified');
+        if ($req->proType1 === true || $req->proType1 === "true") array_push($arr_condition, 'New');
+        if ($req->proType2 === true || $req->proType2 === "true") array_push($arr_condition, 'Used');
+        if ($req->proType3 === true || $req->proType3 === "true") array_push($arr_condition, 'Unspecified');
 
         if ($req->category) $request->categoryId = [$req->category];
 
-        if ($req->proType1 || $req->proType2 || $req->proType3){
+        if (count($arr_condition) > 0){
             $request->itemFilter[] = new Types\ItemFilter([
                 'name' => 'Condition',
                 'value' => $arr_condition
@@ -62,13 +62,13 @@ class EBayApi {
                 'value' => ['WorldWide']
             ]);
         }
-        if ($req->japan) {
+        if ($req->japan === true || $req->japan === "true") {
             $request->itemFilter[] = new Types\ItemFilter([
                 'name' => 'AvailableTo',
                 'value' => ['JP']
             ]);
         }
-        if ($req->seller) {
+        if ($req->seller === true || $req->seller === "true") {
             $request->itemFilter[] = new Types\ItemFilter([
                 'name' => 'Seller',
                 'value' => [$req->seller]

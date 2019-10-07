@@ -360,7 +360,7 @@
                 multiply: "",
                 exrate: "",
                 unit: "",
-                image_limit: "",
+                image_limit: "4",
                 ref_point: "",
                 off_x: "",
                 off_y: "",
@@ -389,7 +389,7 @@
         methods: {
             onCategory1(){
                 this.catLoading2 = true;
-                axios.post("http://blueseason.raindrop.jp/api/category",{
+                axios.post("http://" + window.location.hostname + "/api/category",{
                     id: this.sel_category_1
                 }).then(response => {
                     this.main_cats = response.data.cats;
@@ -400,7 +400,7 @@
             },
             onCategory2(){
                 this.catLoading3 = true;
-                axios.post("http://blueseason.raindrop.jp/api/category",{
+                axios.post("http://" + window.location.hostname + "/api/category",{
                     id: this.sel_category_2
                 }).then(response => {
                     this.sub_cats = response.data.cats;
@@ -411,7 +411,7 @@
             },
             loadTopCategory(){
                 this.catLoading1 = true;
-                axios.post("http://blueseason.raindrop.jp/api/category",{
+                axios.post("http://" + window.location.hostname + "/api/category",{
                     id: '-1'
                 }).then(response => {
                     this.top_cats = response.data.cats;
@@ -421,7 +421,7 @@
                 })
             },
             removeHistory(){
-                axios.post("http://blueseason.raindrop.jp/api/remove",{
+                axios.post("http://" + window.location.hostname + "/api/remove",{
                     ids: this.remove_check
                 }).then(response => {
 
@@ -430,7 +430,7 @@
                 })
             },
             download(id){
-                axios.post("http://blueseason.raindrop.jp/api/download", {
+                axios.post("http://" + window.location.hostname + "/api/download", {
                     id: id
                 }).then(response => {
                     // window.open("http://blueseason.raindrop.jp/downloads/" + id + "/"+ id +".csv", '_blank');
@@ -445,7 +445,7 @@
                 })
             },
             updateHistory(){
-                axios.get('http://blueseason.raindrop.jp/api/history').then(response => {
+                axios.get("http://" + window.location.hostname + '/api/history').then(response => {
                     this.history = response.data.history
                 }).catch(error => {
                     
@@ -465,7 +465,7 @@
                 this.productCt = 0;
                 this.proLoading = true;
                 let cat = this.sel_category_3 == "" ? this.sel_category_2 : this.sel_category_3;
-                axios.post('http://blueseason.raindrop.jp/api/getProductCount', {
+                axios.post("http://" + window.location.hostname + '/api/getProductCount', {
                     site: this.site,
                     keyword: this.keyword,
                     proType1: this.proType1,
@@ -480,7 +480,7 @@
                     seller: this.seller,
                     category: cat
                 }).then(response => {
-                    console.log(response.data.totalEntries);
+                    console.log(response.data);
                     this.productCt = response.data.totalEntries;
                     this.proLoading = false;
                 }).catch(response => {
@@ -523,7 +523,7 @@
                 formData.append('addon_file', this.addon_file);
                 formData.append('insert_file', this.insert_file);
                 formData.append('image_loc', this.image_loc);
-                axios.post('http://blueseason.raindrop.jp/api/process', 
+                axios.post("http://" + window.location.hostname + '/api/process', 
                     formData,
                     {
                         'Content-Type': 'multipart/form-data'
