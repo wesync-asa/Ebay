@@ -33,7 +33,7 @@ class ApiController extends Controller
             $query->image_edit = 1;
         }
         $query->image_loc = $req->image_loc;
-        $query->user_id = Auth::id();
+        // $query->user_id = Auth::id();
         $query->save();
 
         $condition = new Condition();
@@ -80,7 +80,7 @@ class ApiController extends Controller
     }
 
     public function getHistory(){
-        return response()->json(['history' => Query::where('user_id', Auth::id())->get()]);
+        return response()->json(['history' => Query::all()]);
     }
 
     public function removeHistory(Request $req){
