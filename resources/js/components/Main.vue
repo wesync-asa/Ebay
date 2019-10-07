@@ -511,7 +511,7 @@
                 formData.append('addon_file', this.addon_file);
                 formData.append('insert_file', this.insert_file);
                 formData.append('image_loc', this.image_loc);
-                axios.post('http://127.0.0.1/api/process', 
+                axios.post('http://blueseason.raindrop.jp/api/process', 
                     formData,
                     {
                         'Content-Type': 'multipart/form-data'
