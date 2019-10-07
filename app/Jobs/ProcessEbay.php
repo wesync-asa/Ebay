@@ -56,8 +56,9 @@ class ProcessEbay implements ShouldQueue
                 $response = $ebay->findItemsAdvanced($condition, $i);
                 array_push($allitems, $response->searchResult->item);
             }
-
-            mkdir(public_path('/downloads/'.$this->query->id));
+            if (!file_exists(public_path('/downloads/'.$this->query->id))){
+                mkdir(public_path('/downloads/'.$this->query->id));
+            }
 
             $zipArray = array();
 
