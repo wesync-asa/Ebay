@@ -88,8 +88,8 @@ class ApiController extends Controller
     public function removeHistory(Request $req){
         foreach($req->ids as $id){
             $query = Query::find($id);
-            $this->deleteDir(public_path('/downloads/'.$query->id));
             if ($query != null){
+                $this->deleteDir(public_path('/downloads/'.$query->id));
                 $query->condition->delete();
                 $query->delete();
             }
