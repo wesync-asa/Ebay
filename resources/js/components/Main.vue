@@ -8,7 +8,7 @@
                 <div class="row form-group">
                     <label for="sel_site" class="col-sm-4 col-form-label text-md-right">ebayサイト</label>
                     <div class="col-sm-8">
-                        <select class="form-control" v-model="site" name="site">
+                        <select id="sel_site" class="form-control" v-model="site" name="site">
                             <option value="0">eBay US</option>
                             <option value="2">eBay Canada (English)</option>
                             <option value="3">eBay UK</option>
@@ -38,6 +38,7 @@
                     <label for="keyword" class="col-sm-4 col-form-label text-md-right">キーワード</label>
                     <div class="col-sm-8">
                         <input v-model="keyword" type="text" class="form-control" name="keyword" value="" />
+                        <span v-if="val_keyword">Please fill keyword field</span>
                     </div>
                 </div>
                 <div class="row form-group">
@@ -52,6 +53,14 @@
                         <label><input type="checkbox" name="productType[]" v-model="proType1"> 新品</label>
                         <label><input type="checkbox" name="productType[]" v-model="proType2"> 中古</label>
                         <label><input type="checkbox" name="productType[]" v-model="proType3"> 未指定商品</label>
+                    </div>
+                </div>
+                <div class="row form-group">
+                    <div class="col-sm-4"><div align="right" for="ebay_site">出品形式</div></div>
+                    <div class="col-sm-8" id="divProductType">
+                        <label><input type="checkbox" name="productType[]" v-model="aucType1"> オークション形式</label>
+                        <label><input type="checkbox" name="productType[]" v-model="aucType2"> 今すぐ購入付オークション形式</label>
+                        <label><input type="checkbox" name="productType[]" v-model="aucType3"> 固定料金形式</label>
                     </div>
                 </div>
                 <div class="row form-group">
@@ -83,7 +92,7 @@
                 <div class="row form-group">
                     <label for="" class="col-sm-4 col-form-label text-md-right"><i v-if="this.catLoading1" class="fa fa-refresh fa-spin"></i>カテゴリー LEVEL1</label>
                     <div class="col-sm-8">
-                        <select class="form-control" v-model="sel_category_1" name="category_label_1" @change="onCategory1">
+                        <select id="sel_category_1" class="form-control" v-model="sel_category_1" name="category_label_1" @change="onCategory1">
                             <template v-for="(cat, index) in top_cats">
                                 <option v-bind:key="index" :value="cat.id">{{cat.name}}</option>
                             </template>
@@ -93,7 +102,7 @@
                 <div class="row form-group">
                     <label for="" class="col-sm-4 col-form-label text-md-right"><i v-if="this.catLoading2" class="fa fa-refresh fa-spin"></i>カテゴリー LEVEL2</label>
                     <div class="col-sm-8">
-                        <select class="form-control" v-model="sel_category_2" name="category_label_2" @change="onCategory2">
+                        <select id="sel_category_2" class="form-control" v-model="sel_category_2" name="category_label_2" @change="onCategory2">
                             <template v-for="(cat, index) in main_cats">
                                 <option v-bind:key="index" :value="cat.id">{{cat.name}}</option>
                             </template>
@@ -103,7 +112,7 @@
                 <div class="row form-group">
                     <label for="" class="col-sm-4 col-form-label text-md-right"><i v-if="this.catLoading3" class="fa fa-refresh fa-spin"></i>カテゴリー LEVEL3</label>
                     <div class="col-sm-8">
-                        <select class="form-control" v-model="sel_category_3" name="category_label_3">
+                        <select id="sel_category_3" class="form-control" v-model="sel_category_3" name="category_label_3">
                             <template v-for="(cat, index) in sub_cats">
                                 <option v-bind:key="index" :value="cat.id">{{cat.name}}</option>
                             </template>
@@ -122,7 +131,7 @@
                 <div class="row form-group">
                     <div class="col-sm-4"></div>
                     <div class="col-sm-8">
-                        <span v-if="!this.proLoading">商品数 : {{productCt}}</span>
+                        <span v-if="!this.proLoading">商品数 : {{productCt}} {{searchStatus}}</span>
                     </div>
                 </div>
             </form>
@@ -192,7 +201,7 @@
             <div class="row form-group">
                 <label for="" class="col-sm-4 col-form-label text-md-right">基準点</label>
                 <div class="col-sm-6">
-                    <select class="form-control" v-model="ref_point">
+                    <select id="ref_point" class="form-control" v-model="ref_point">
                         <option value="top-left">左上</option>
                         <option value="top">上</option>
                         <option value="top-right">右上</option>
@@ -300,6 +309,7 @@
                         <th>画像編集</th>
                         <th>画像保存</th>
                         <th>ダウンロード</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -322,6 +332,7 @@
                             <td v-if="item.image_loc === 0">サーバー</td>
                             <td v-if="item.image_loc === 1">zip</td>
                             <td><button v-on:click="download(item.id)" type="button" class="btn btn-primary">ダウンロード</button></td>
+                            <td><button v-on:click="detail(item)" type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-detail">詳細</button></td>
                         </tr>
                     </template>
                 </tbody>
@@ -329,7 +340,61 @@
         </div>
         <div class="col-sm-2"></div>
     </div>
+    <div class="modal fade in" id="modal-detail">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body" v-if="current_detail != null">
+                    <h5>検索条件設定</h5>
+                    <div class="row form-group">
+                        <label class="col-sm-6 text-md-right">ebayサイト</label><div class="col-sm-6">{{ current_detail.site_name }}</div>
+                        <label class="col-sm-6 text-md-right">キーワード</label><div class="col-sm-6">{{ current_detail.keyword }}</div>
+                        <label class="col-sm-6 text-md-right">出品者ID</label><div class="col-sm-6">{{ current_detail.seller }}</div>
+                        <label class="col-sm-6 text-md-right">商品の状態</label><div class="col-sm-6">{{ current_detail.proType1 }}</div>
+                        <label class="col-sm-6 text-md-right">出品形式</label><div class="col-sm-6">{{ current_detail.aucType1 }}</div>
+                        <label class="col-sm-6 text-md-right">価格（USD）</label><div class="col-sm-6">{{ current_detail.price_from }} ~ {{ current_detail.price_from }} </div>
+                        <label class="col-sm-6 text-md-right">在庫数</label><div class="col-sm-6">{{ current_detail.qty_from }} ~ {{ current_detail.qty_to }}</div>
+                        <label class="col-sm-6 text-md-right">ワールドワイト検索</label><div class="col-sm-6">{{ current_detail.worldwide }}</div>
+                        <label class="col-sm-6 text-md-right">日本発送可能のみ</label><div class="col-sm-6">{{ current_detail.japan }}</div>
+                        <label class="col-sm-6 text-md-right">カテゴリー</label><div class="col-sm-6">{{ current_detail.category_name }}</div>
+                    </div>
+                    <h5>CSV価格計算</h5>
+                    <div class="row form-group">
+                        <label class="col-sm-6 text-md-right">加算定額（USD）</label><div class="col-sm-6">{{ current_detail.diff }}</div>
+                        <label class="col-sm-6 text-md-right">乗算係数</label><div class="col-sm-6">{{ current_detail.multiply }}</div>
+                        <label class="col-sm-6 text-md-right">為替レート（ 円 ）</label><div class="col-sm-6">{{ current_detail.exrate }}</div>
+                        <label class="col-sm-6 text-md-right">切り上げ</label><div class="col-sm-6">{{ current_detail.unit }}</div>
+                    </div>
+                    <h5>商品画像設定</h5>
+                    <div class="row form-group">
+                        <label class="col-sm-6 text-md-right">1商品あたりの画像数</label><div class="col-sm-6">{{ current_detail.image_limit }}</div>
+                    </div>
+                    <h5>重ねる画像の指定</h5>
+                    <div class="row form-group">
+                        <label class="col-sm-6 text-md-right">商品に重ねる画像指定</label><div class="col-sm-6"><img v-bind:src="current_detail.insert_file" alt=""/></div>
+                        <label class="col-sm-6 text-md-right">基準点</label><div class="col-sm-6">{{ current_detail.ref_point_name }}</div>
+                        <label class="col-sm-6 text-md-right">基準点からの距離</label><div class="col-sm-6">{{ current_detail.off_x }} : {{ current_detail.off_y }}</div>
+                        <label class="col-sm-6 text-md-right">重ねる画像の大きさ（倍率）</label><div class="col-sm-6">{{ current_detail.scale }}</div>
+                    </div>
+                    <h5>指定した画像を挿入</h5>
+                    <div class="row form-group">
+                        <label class="col-sm-6 text-md-right">全商品に挿入する画像を指定</label><div class="col-sm-6"><img v-bind:src="current_detail.addon_file" alt=""/></div>
+                        <label class="col-sm-6 text-md-right">画像を挿入する位置（画像の順番）</label><div class="col-sm-6">{{ current_detail.addon_pos }}</div>
+                    </div>
+                    <h5>指定した画像を挿入</h5>
+                    <div class="row form-group">
+                        <label class="col-sm-6 text-md-right">画像保存方法</label><div class="col-sm-6">{{ current_detail.image_loc }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
 </template>
 
 <script>
@@ -342,16 +407,19 @@
                 productCt: 0,
                 proLoading: false,
                 processing: false,
-                keyword: "Harry Potter",
+                keyword: "",
                 seller: "",
                 proType1: "",
                 proType2: "",
                 proType3: "",
+                aucType1: "",
+                aucType2: "",
+                aucType3: "",
                 price_from: "",
                 price_to: "",
                 qty_from: "",
                 qty_to: "",
-                worldwide: "",
+                worldwide: "true",
                 japan: "",
                 sel_category_1: "",
                 sel_category_2: "",
@@ -377,6 +445,9 @@
                 catLoading1: false,
                 catLoading2: false,
                 catLoading3: false,
+                searchStatus: "",
+                val_keyword: false,
+                current_detail: null,
             }
         },
         mounted() {
@@ -387,6 +458,10 @@
             })
         },
         methods: {
+            detail(item){
+                console.log(item.condition);
+                this.current_detail = item.condition;
+            },
             onCategory1(){
                 this.catLoading2 = true;
                 axios.post("http://" + window.location.hostname + "/api/category",{
@@ -462,15 +537,25 @@
                 if (this.proLoading){
                     return;
                 }
+                this.val_keyword = false;
+                if (this.keyword == "") {
+                    this.val_keyword = true;
+                    return;
+                }
                 this.productCt = 0;
                 this.proLoading = true;
+                this.searchStatus = "";
                 let cat = this.sel_category_3 == "" ? this.sel_category_2 : this.sel_category_3;
+                cat = this.sel_category_2 == "" ? this.sel_category_1 : this.sel_category_2;
                 axios.post("http://" + window.location.hostname + '/api/getProductCount', {
                     site: this.site,
                     keyword: this.keyword,
                     proType1: this.proType1,
                     proType2: this.proType2,
                     proType3: this.proType3,
+                    aucType1: this.aucType1,
+                    aucType2: this.aucType2,
+                    aucType3: this.aucType3,
                     price_from: this.price_from,
                     price_to: this.price_to,
                     qty_from: this.qty_from,
@@ -481,7 +566,11 @@
                     category: cat
                 }).then(response => {
                     console.log(response.data);
-                    this.productCt = response.data.totalEntries;
+                    if (response.data.success){
+                        this.productCt = response.data.totalEntries;
+                    } else {
+                        this.searchStatus = response.data.msg[0];
+                    }
                     this.proLoading = false;
                 }).catch(response => {
                     this.proLoading = false;
@@ -493,14 +582,19 @@
                 this.processing = true;
                 let formData = new FormData();
                 let cat = this.sel_category_3 == "" ? this.sel_category_2 : this.sel_category_3;
+                cat = this.sel_category_2 == "" ? this.sel_category_1 : this.sel_category_2;
                 //search field
                 formData.append('productCt', this.productCt);
                 formData.append('site', this.site);
+                formData.append('site_name', $('#sel_site option:selected').text());
                 formData.append('keyword', this.keyword);
                 formData.append('seller', this.seller);
                 formData.append('proType1', this.proType1);
                 formData.append('proType2', this.proType2);
                 formData.append('proType3', this.proType3);
+                formData.append('aucType1', this.aucType1);
+                formData.append('aucType2', this.aucType2);
+                formData.append('aucType3', this.aucType3);
                 formData.append('price_from', this.price_from);
                 formData.append('price_to', this.price_to);
                 formData.append('qty_from', this.qty_from);
@@ -508,6 +602,11 @@
                 formData.append('worldwide', this.worldwide);
                 formData.append('japan', this.japan);
                 formData.append('category', cat);
+                var category_names = Array();
+                if (this.sel_category_1 != "") category_names.push($('#sel_category_1 option:selected').text());
+                if (this.sel_category_2 != "") category_names.push($('#sel_category_2 option:selected').text());
+                if (this.sel_category_3 != "") category_names.push($('#sel_category_3 option:selected').text());
+                formData.append('category_name', category_names.join("/"));
                 //csv field
                 formData.append('diff', this.diff);
                 formData.append('multiply', this.multiply);
@@ -516,6 +615,7 @@
                 //image field
                 formData.append('image_limit', this.image_limit);
                 formData.append('ref_point', this.ref_point);
+                formData.append('ref_point_name', $('#ref_point option:selected').text());
                 formData.append('off_x', this.off_x);
                 formData.append('off_y', this.off_y);
                 formData.append('scale', this.scale);

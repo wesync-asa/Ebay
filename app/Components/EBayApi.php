@@ -22,12 +22,24 @@ class EBayApi {
         if ($req->proType2 === true || $req->proType2 === "true") array_push($arr_condition, 'Used');
         if ($req->proType3 === true || $req->proType3 === "true") array_push($arr_condition, 'Unspecified');
 
+        $arr_auction = [];
+        if ($req->aucType1 === true || $req->aucType1 === "true") array_push($arr_auction, 'Auction');
+        if ($req->aucType2 === true || $req->aucType2 === "true") array_push($arr_auction, 'AuctionWithBIN');
+        if ($req->aucType3 === true || $req->aucType3 === "true") array_push($arr_auction, 'FixedPrice');
+
         if ($req->category) $request->categoryId = [$req->category];
 
         if (count($arr_condition) > 0){
             $request->itemFilter[] = new Types\ItemFilter([
                 'name' => 'Condition',
                 'value' => $arr_condition
+            ]);
+        }
+
+        if (count($arr_auction) > 0) {
+            $request->itemFilter[] = new Types\ItemFilter([
+                'name' => 'ListingType',
+                'value' => $arr_auction
             ]);
         }
 
@@ -56,7 +68,7 @@ class EBayApi {
                 'value' => [$req->qty_to]
             ]);
         }
-        if ($req->worldwide) {
+        if ($req->worldwide === true || $req->worldwide === "true") {
             $request->itemFilter[] = new Types\ItemFilter([
                 'name' => 'LocatedIn',
                 'value' => ['WorldWide']
@@ -68,7 +80,7 @@ class EBayApi {
                 'value' => ['JP']
             ]);
         }
-        if ($req->seller === true || $req->seller === "true") {
+        if ($req->seller) {
             $request->itemFilter[] = new Types\ItemFilter([
                 'name' => 'Seller',
                 'value' => [$req->seller]
@@ -88,6 +100,7 @@ class EBayApi {
         $request->outputSelector = ['SellerInfo'];
 
         $response = $service->findItemsAdvanced($request);
+        
         return $response;
     }
 

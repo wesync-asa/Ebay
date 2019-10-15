@@ -18,11 +18,22 @@ class ApiController extends Controller
         $ebay = new EBayApi();
         $response = $ebay->findItemsAdvanced($req, 1);
 
-        
-        return response()->json([
-            'totalEntries' => $response->paginationOutput->totalEntries,
-            'data' => $req->all()
-        ]);
+        if ($response->ack === "Failure"){
+            $err = array();
+            foreach ($response->errorMessage->error as $error){
+                array_push($err, $error->message);
+            }
+            return response()->json([
+                'success' => false,
+                'msg' => $err
+            ]);
+        } else {
+            return response()->json([
+                'success' => true,
+                'totalEntries' => $response->paginationOutput->totalEntries,
+                'data' => $req->all()
+            ]);
+        }
     }
 
     public function process(Request $req){
@@ -41,11 +52,15 @@ class ApiController extends Controller
         $condition = new Condition();
         $condition->query_id = $query->id;
         $condition->site = $req->site;
+        $condition->site_name = $req->site_name;
         $condition->keyword = $req->keyword;
         $condition->seller = $req->seller;
         $condition->proType1 = $req->proType1;
         $condition->proType2 = $req->proType2;
         $condition->proType3 = $req->proType3;
+        $condition->aucType1 = $req->aucType1;
+        $condition->aucType2 = $req->aucType2;
+        $condition->aucType3 = $req->aucType3;
         $condition->price_from = $req->price_from;
         $condition->price_to = $req->price_to;
         $condition->qty_from = $req->qty_from;
@@ -53,12 +68,14 @@ class ApiController extends Controller
         $condition->worldwide = $req->worldwide;
         $condition->japan = $req->japan;
         $condition->category = $req->category;
+        $condition->category_name = $req->category_name;
         $condition->diff = $req->diff;
         $condition->multiply = $req->multiply;
         $condition->exrate = $req->exrate;
         $condition->unit = $req->unit;
         $condition->image_limit = $req->image_limit;
         $condition->ref_point = $req->ref_point;
+        $condition->ref_point_name = $req->ref_point_name;
         $condition->off_x = $req->off_x;
         $condition->off_y = $req->off_y;
         $condition->scale = $req->scale;
@@ -82,7 +99,29 @@ class ApiController extends Controller
     }
 
     public function getHistory(){
-        return response()->json(['history' => Query::all()]);
+        $arr_query = Query::all();
+        $result = array();
+        foreach($arr_query as $q){
+            $item = $q->toArray();
+            $item['condition'] = $q->condition->toArray();
+
+            $arr_condition = [];
+            if ($q->condition->proType1 == "true") array_push($arr_condition, '新品');
+            if ($q->condition->proType2 == "true") array_push($arr_condition, '中古');
+            if ($q->condition->proType3 == "true") array_push($arr_condition, '未指定商品');
+            $item['condition']['proType1'] = implode(',', $arr_condition);
+
+            $arr_auction = [];
+            if ($q->condition->aucType1 == "true") array_push($arr_auction, 'Auction');
+            if ($q->condition->aucType2 == "true") array_push($arr_auction, 'AuctionWithBIN');
+            if ($q->condition->aucType3 == "true") array_push($arr_auction, 'FixedPrice');
+            $item['condition']['aucType1'] = implode(',', $arr_auction);
+
+            $item['condition']['addon_file'] = asset($item['condition']['addon_file']);
+            $item['condition']['insert_file'] = asset($item['condition']['insert_file']);
+            array_push($result, $item);
+        }
+        return response()->json(['history' => $result]);
     }
 
     public function removeHistory(Request $req){
