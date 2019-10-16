@@ -77,20 +77,25 @@ class ProcessEbay implements ShouldQueue
             if ($condition->addon_file){
                 array_push($headers, 'サブ画像URL'.($limit + 1));
             }
-            fputcsv($csvfile, $headers);
-            // fwrite($csvfile, chr(255).chr(254).mb_convert_encoding(implode("\t",$headers)."\r\n", 'UTF-16LE', 'UTF-8'));
+            // fputcsv($csvfile, $headers);
+            fwrite($csvfile, chr(255).chr(254).mb_convert_encoding(implode("\t",$headers)."\r\n", 'UTF-16LE', 'UTF-8'));
+
+            //make id prefix
+            $abbr = "";
+            if(preg_match_all('/\b(\w)/',strtoupper($condition->keyword),$m)) {
+                $abbr = implode('',$m[1]);
+            }
             
             foreach($allitems as $items){
                 foreach($items as $item){
+                    //calc price by csv setting
                     $price = ($item->sellingStatus->currentPrice->value + $condition->diff) * $condition->multiply * $condition->exrate;
                     if (!$condition->unit) $condition->unit = 1;
                     $price = round($price / $condition->unit, 1, PHP_ROUND_HALF_UP) * $condition->unit;
-                    $line = array(
-                        $item->itemId,
-                        $item->title,
-                        $item->sellerInfo->sellerUserName,
-                        $price,
-                    );
+                    //make a csv row array
+                    $id = $abbr.time();
+                    $line = array($id, $item->title, $item->sellerInfo->sellerUserName, $price);
+                    //process image
                     $images = $ebay->getSingleItem($item);
                     $arr_imgs = array();
                     while($images->current()){
@@ -102,9 +107,9 @@ class ProcessEbay implements ShouldQueue
                         array_splice($arr_imgs, $condition->addon_pos, 0, asset($condition->addon_file));
                     }
                     foreach($arr_imgs as $key => $img){
-                        $image_path = '/downloads/'.$this->query->id.'/'. $item->itemId.'_'.$key.'.jpg';
+                        $image_path = '/downloads/'.$this->query->id.'/'. $id.'_'.$key.'.jpg';
                         if ($key == "0") {
-                            $image_path = '/downloads/'.$this->query->id.'/'. $item->itemId.'.jpg';
+                            $image_path = '/downloads/'.$this->query->id.'/'. $id.'.jpg';
                         }
                         $orgImg = Image::make($img);
                         if ($condition->insert_file){
@@ -116,15 +121,15 @@ class ProcessEbay implements ShouldQueue
                         array_push($zipArray, public_path($image_path));
                         array_push($line, asset($image_path));
                     }
-                    fputcsv($csvfile, $line);
-                    // fwrite($csvfile, mb_convert_encoding(implode("\t",$line)."\r\n", 'UTF-16LE', 'UTF-8'));
+                    // fputcsv($csvfile, $line);
+                    fwrite($csvfile, mb_convert_encoding(implode("\t",$line)."\r\n", 'UTF-16LE', 'UTF-8'));
                 }
             }
 
             fclose($csvfile);
 
             if ($condition->image_loc == "1") {
-                $output = public_path('/downloads/'.$this->query->id.'/'.$this->query->id);
+                $output = '/downloads/'.$this->query->id.'/';
                 $this->zipFiles($zipArray, $output);
             }
 
@@ -141,22 +146,38 @@ class ProcessEbay implements ShouldQueue
         $size = 0;
         $limit = 25 * 1024 * 1024;
         
-        $zip_idx = 0;
-        $file_idx = 0;
+        $zip_idx = 1;
+        $file_idx = 1;
         $keys = array_keys($files);
         while(true){
             if ($file_idx > count($files) - 1) break;
-            $zip = Zip::create($output.'_'.$zip_idx.'.zip');
+            mkdir(public_path($output.$zip_idx));
             while($size < $limit){
                 if ($file_idx > count($files) - 1) break;
                 $size += filesize($files[$keys[$file_idx]]);
                 if ($size > $limit) break;
-                $zip->add($files[$keys[$file_idx]]);
+                copy($files[$keys[$file_idx]], public_path($output.$zip_idx.'/'.basename($files[$keys[$file_idx]])));
+                // $zip->add($files[$keys[$file_idx]]);
                 $file_idx++;
             }
+            $zip = Zip::create(public_path($output.'/'.$zip_idx.'.zip'));
+            $zip->add(public_path($output.'/'.$zip_idx));
             $zip->close();
+
+            $this->deleteDir(public_path($output.'/'.$zip_idx));
+
             $zip_idx++;
             $size = 0;
+        }
+
+        $totalZip = Zip::create(public_path($output.'/result.zip'));
+        $totalZip->add($files[$keys[0]]);
+        for($i = 1; $i < $zip_idx; $i++){
+            $totalZip->add(public_path($output.'/'.$i.'.zip'));
+        }
+        $totalZip->close();
+        for($i = 1; $i < $zip_idx; $i++){
+            unlink(public_path($output.'/'.$i.'.zip'));
         }
     }
 
@@ -172,5 +193,23 @@ class ProcessEbay implements ShouldQueue
 
         $response = $service->getSingleItem($request);
         return $response->Item->PictureURL;
+    }
+
+    public function deleteDir($dirPath) {
+        if (! is_dir($dirPath)) {
+            throw new InvalidArgumentException("$dirPath must be a directory");
+        }
+        if (substr($dirPath, strlen($dirPath) - 1, 1) != '/') {
+            $dirPath .= '/';
+        }
+        $files = glob($dirPath . '*', GLOB_MARK);
+        foreach ($files as $file) {
+            if (is_dir($file)) {
+                self::deleteDir($file);
+            } else {
+                unlink($file);
+            }
+        }
+        rmdir($dirPath);
     }
 }

@@ -178,13 +178,7 @@ class ApiController extends Controller
         if ($query->image_loc == "0") {
             return response()->json(['files' => [asset("downloads/".$id."/".$id.".csv")]]);
         } else {
-            $idx = 0;
-            $zipArray = array();
-            while(file_exists(public_path("downloads/".$id."/".$id."_".$idx.".zip"))){
-                array_push($zipArray, asset("downloads/".$id."/".$id."_".$idx.".zip"));
-                $idx++;
-            }
-            return response()->json(['files' => $zipArray]);
+            return response()->json(['files' => [asset("downloads/".$id."/result.zip")]]);
         }
     }
 }
