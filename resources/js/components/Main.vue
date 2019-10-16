@@ -38,7 +38,7 @@
                     <label for="keyword" class="col-sm-4 col-form-label text-md-right">キーワード</label>
                     <div class="col-sm-8">
                         <input v-model="keyword" type="text" class="form-control" name="keyword" value="" />
-                        <span v-if="val_keyword">Please fill keyword field</span>
+                        <span v-if="val_keyword" style="color:red">Please fill keyword field</span>
                     </div>
                 </div>
                 <div class="row form-group">
@@ -134,7 +134,8 @@
                 <div class="row form-group">
                     <div class="col-sm-4"></div>
                     <div class="col-sm-8">
-                        <span v-if="!this.proLoading">商品数 : {{productCt}} {{searchStatus}}</span>
+                        <span v-if="!this.proLoading">商品数 : {{productCt}}</span>
+                        <span v-if="!this.proLoading" style="color:red">{{searchStatus}}</span>
                     </div>
                 </div>
             </form>
