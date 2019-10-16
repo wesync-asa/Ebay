@@ -59,8 +59,8 @@
                     <div class="col-sm-4"><div align="right" for="ebay_site">出品形式</div></div>
                     <div class="col-sm-8" id="divProductType">
                         <label><input type="checkbox" name="productType[]" v-model="aucType1"> オークション形式</label>
-                        <label><input type="checkbox" name="productType[]" v-model="aucType2"> 今すぐ購入付オークション形式</label>
-                        <label><input type="checkbox" name="productType[]" v-model="aucType3"> 固定料金形式</label>
+                        <label style="margin-left:5px"><input type="checkbox" name="productType[]" v-model="aucType2"> 今すぐ購入付オークション形式</label>
+                        <label style="margin-left:5px"><input type="checkbox" name="productType[]" v-model="aucType3"> 固定料金形式</label>
                     </div>
                 </div>
                 <div class="row form-group">
@@ -93,6 +93,7 @@
                     <label for="" class="col-sm-4 col-form-label text-md-right"><i v-if="this.catLoading1" class="fa fa-refresh fa-spin"></i>カテゴリー LEVEL1</label>
                     <div class="col-sm-8">
                         <select id="sel_category_1" class="form-control" v-model="sel_category_1" name="category_label_1" @change="onCategory1">
+                            <option value="">カテゴリを選択してください</option>
                             <template v-for="(cat, index) in top_cats">
                                 <option v-bind:key="index" :value="cat.id">{{cat.name}}</option>
                             </template>
@@ -103,6 +104,7 @@
                     <label for="" class="col-sm-4 col-form-label text-md-right"><i v-if="this.catLoading2" class="fa fa-refresh fa-spin"></i>カテゴリー LEVEL2</label>
                     <div class="col-sm-8">
                         <select id="sel_category_2" class="form-control" v-model="sel_category_2" name="category_label_2" @change="onCategory2">
+                            <option value="">カテゴリを選択してください</option>
                             <template v-for="(cat, index) in main_cats">
                                 <option v-bind:key="index" :value="cat.id">{{cat.name}}</option>
                             </template>
@@ -113,6 +115,7 @@
                     <label for="" class="col-sm-4 col-form-label text-md-right"><i v-if="this.catLoading3" class="fa fa-refresh fa-spin"></i>カテゴリー LEVEL3</label>
                     <div class="col-sm-8">
                         <select id="sel_category_3" class="form-control" v-model="sel_category_3" name="category_label_3">
+                            <option value="">カテゴリを選択してください</option>
                             <template v-for="(cat, index) in sub_cats">
                                 <option v-bind:key="index" :value="cat.id">{{cat.name}}</option>
                             </template>
@@ -315,7 +318,7 @@
                 <tbody>
                     <template v-for="(item, index) in history">
                         <tr v-bind:key="index">
-                            <td><input type="checkbox" 
+                            <td><input v-if="item.status === 'finish'" type="checkbox" 
                                 v-model="remove_check" 
                                 :checked="remove_check.indexOf(+item.id)>-1"
                                 :value="item.id"></td>
@@ -331,7 +334,7 @@
                             <td v-if="item.image_edit != 1">無</td>
                             <td v-if="item.image_loc === 0">サーバー</td>
                             <td v-if="item.image_loc === 1">zip</td>
-                            <td><button v-on:click="download(item.id)" type="button" class="btn btn-primary">ダウンロード</button></td>
+                            <td><button v-if="item.status === 'finish'" v-on:click="download(item.id)" type="button" class="btn btn-primary">ダウンロード</button></td>
                             <td><button v-on:click="detail(item)" type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-detail">詳細</button></td>
                         </tr>
                     </template>
@@ -385,9 +388,11 @@
                         <label class="col-sm-6 text-md-right">全商品に挿入する画像を指定</label><div class="col-sm-6"><img v-bind:src="current_detail.addon_file" alt=""/></div>
                         <label class="col-sm-6 text-md-right">画像を挿入する位置（画像の順番）</label><div class="col-sm-6">{{ current_detail.addon_pos }}</div>
                     </div>
-                    <h5>指定した画像を挿入</h5>
+                    <h5>画像保存設定</h5>
                     <div class="row form-group">
-                        <label class="col-sm-6 text-md-right">画像保存方法</label><div class="col-sm-6">{{ current_detail.image_loc }}</div>
+                        <label class="col-sm-6 text-md-right">画像保存方法</label>
+                        <div class="col-sm-6" v-if="current_detail.image_loc == '0'">そのままサーバーへ保存</div>
+                        <div class="col-sm-6" v-if="current_detail.image_loc == '1'">25MBずつzipファイルにする</div>
                     </div>
                 </div>
             </div>

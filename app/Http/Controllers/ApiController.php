@@ -158,6 +158,9 @@ class ApiController extends Controller
 
     public function getCategory(Request $req){
         $id = $req->id;
+        if ($id == "") {
+            return array();
+        }
         $ebay = new EbayApi();
         $response = $ebay->getCategoryInfo($id);
         $result = array();

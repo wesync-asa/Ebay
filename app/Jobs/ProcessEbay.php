@@ -103,6 +103,9 @@ class ProcessEbay implements ShouldQueue
                     }
                     foreach($arr_imgs as $key => $img){
                         $image_path = '/downloads/'.$this->query->id.'/'. $item->itemId.'_'.$key.'.jpg';
+                        if ($key == "0") {
+                            $image_path = '/downloads/'.$this->query->id.'/'. $item->itemId.'.jpg';
+                        }
                         $orgImg = Image::make($img);
                         if ($condition->insert_file){
                             $insert_img = Image::make(public_path($condition->insert_file));
