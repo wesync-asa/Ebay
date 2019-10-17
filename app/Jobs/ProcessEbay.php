@@ -93,7 +93,8 @@ class ProcessEbay implements ShouldQueue
                     if (!$condition->unit) $condition->unit = 1;
                     $price = round($price / $condition->unit, 1, PHP_ROUND_HALF_UP) * $condition->unit;
                     //make a csv row array
-                    $id = $abbr.time();
+                    $permitted_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                    $id = substr(str_shuffle($permitted_chars), 0, 6).time();
                     $line = array($id, $item->title, $item->sellerInfo->sellerUserName, $price);
                     //process image
                     $images = $ebay->getSingleItem($item);
