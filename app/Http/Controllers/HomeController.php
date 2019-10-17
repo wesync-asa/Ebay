@@ -7,6 +7,7 @@ use \DTS\eBaySDK\Shopping\Types;
 use Illuminate\Support\Facades\Config;
 USE App\Components\EBayApi;
 use App\Models\Query;
+use Image;
 
 class HomeController extends Controller
 {
@@ -31,5 +32,6 @@ class HomeController extends Controller
     }
 
     public function test(){
+        $img = Image::make('https://i.ebayimg.com/00/s/MTIwMFgxNjAw/z/h-QAAOSwsB9WCYHh/$_1.JPG?set_id=880000500F');
     }
 }

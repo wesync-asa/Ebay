@@ -111,7 +111,18 @@ class ProcessEbay implements ShouldQueue
                         if ($key == "0") {
                             $image_path = '/downloads/'.$this->query->id.'/'. $id.'.jpg';
                         }
-                        $orgImg = Image::make($img);
+                        $orgImg = null;
+                        $flag = true;
+                        $try = 1;
+                        while ($flag && $try <= 3){
+                            try {
+                                $orgImg = Image::make($img);
+                                $flag = false;
+                            } catch (\Exception $e) {
+
+                            }
+                            $try++;
+                        }
                         if ($condition->insert_file){
                             $insert_img = Image::make(public_path($condition->insert_file));
                             $insert_img = $insert_img->widen($insert_img->width() / 100 * $condition->scale);
