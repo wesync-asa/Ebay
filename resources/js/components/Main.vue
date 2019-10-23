@@ -38,7 +38,7 @@
                     <label for="keyword" class="col-sm-4 col-form-label text-md-right">キーワード</label>
                     <div class="col-sm-8">
                         <input v-model="keyword" type="text" class="form-control" name="keyword" value="" />
-                        <span v-if="val_keyword" style="color:red">Please fill keyword field</span>
+                        <span v-if="val_keyword" style="color:red">キーワードを入力してください</span>
                     </div>
                 </div>
                 <div class="row form-group">
@@ -360,7 +360,7 @@
                         <label class="col-sm-6 text-md-right">出品者ID</label><div class="col-sm-6">{{ current_detail.seller }}</div>
                         <label class="col-sm-6 text-md-right">商品の状態</label><div class="col-sm-6">{{ current_detail.proType1 }}</div>
                         <label class="col-sm-6 text-md-right">出品形式</label><div class="col-sm-6">{{ current_detail.aucType1 }}</div>
-                        <label class="col-sm-6 text-md-right">価格（USD）</label><div class="col-sm-6">{{ current_detail.price_from }} ~ {{ current_detail.price_from }} </div>
+                        <label class="col-sm-6 text-md-right">価格（USD）</label><div class="col-sm-6">{{ current_detail.price_from }} ~ {{ current_detail.price_to }} </div>
                         <label class="col-sm-6 text-md-right">在庫数</label><div class="col-sm-6">{{ current_detail.qty_from }} ~ {{ current_detail.qty_to }}</div>
                         <label class="col-sm-6 text-md-right">ワールドワイト検索</label><div class="col-sm-6">{{ current_detail.worldwide }}</div>
                         <label class="col-sm-6 text-md-right">日本発送可能のみ</label><div class="col-sm-6">{{ current_detail.japan }}</div>

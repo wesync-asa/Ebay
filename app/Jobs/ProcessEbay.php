@@ -60,13 +60,8 @@ class ProcessEbay implements ShouldQueue
                 mkdir(public_path('/downloads/'.$this->query->id));
             }
 
-            $zipArray = array();
-
             $csvPath = '/downloads/'.$this->query->id.'/'.$this->query->id.'.csv';
             $csvfile = fopen(public_path($csvPath), 'w');
-            array_push($zipArray, public_path($csvPath));
-            $zipArray['result.csv'] = public_path($csvPath);
-
 
             $headers = array('商品ID', '商品名', '出品者ID', '価格（日本円）', 'メイン画像パス');
             
@@ -79,12 +74,6 @@ class ProcessEbay implements ShouldQueue
             }
             // fputcsv($csvfile, $headers);
             fwrite($csvfile, chr(255).chr(254).mb_convert_encoding(implode("\t",$headers)."\r\n", 'UTF-16LE', 'UTF-8'));
-
-            //make id prefix
-            $abbr = "";
-            if(preg_match_all('/\b(\w)/',strtoupper($condition->keyword),$m)) {
-                $abbr = implode('',$m[1]);
-            }
             
             foreach($allitems as $items){
                 foreach($items as $item){
@@ -130,7 +119,6 @@ class ProcessEbay implements ShouldQueue
                             $orgImg->insert($insert_img, $condition->ref_point, $condition->off_x, $condition->off_y);
                         }
                         $orgImg->save(public_path($image_path));
-                        array_push($zipArray, public_path($image_path));
                         array_push($line, asset($image_path));
                     }
                     // fputcsv($csvfile, $line);
@@ -141,8 +129,7 @@ class ProcessEbay implements ShouldQueue
             fclose($csvfile);
 
             if ($condition->image_loc == "1") {
-                $output = '/downloads/'.$this->query->id.'/';
-                $this->zipFiles($zipArray, $output);
+                $this->zipFiles($this->query->id);
             }
 
             $this->query->status = "finish";
@@ -154,22 +141,40 @@ class ProcessEbay implements ShouldQueue
         }
     }
 
-    public function zipFiles($files, $output){
+    public function zipFiles($qid){
+        $output = public_path('/downloads/'.$qid);
+        $files = array();
+        if ($handle = opendir($output)) {
+            while (false !== ($entry = readdir($handle))) {
+                if ($entry != "." && $entry != "..") {
+                    array_push($files, public_path('/downloads/'.$qid.'/'.$entry));
+                }
+            }
+            closedir($handle);
+        }
+
+        $output = '/downloads/'.$qid.'/';
         $size = 0;
         $limit = 25 * 1024 * 1024;
         
         $zip_idx = 1;
-        $file_idx = 1;
+        $file_idx = 0;
         $keys = array_keys($files);
+        $csvfile = "";
         while(true){
             if ($file_idx > count($files) - 1) break;
             mkdir(public_path($output.$zip_idx));
             while($size < $limit){
                 if ($file_idx > count($files) - 1) break;
-                $size += filesize($files[$keys[$file_idx]]);
+                $filename = $files[$keys[$file_idx]];
+                if(strpos($filename, 'csv')){ 
+                    $file_idx++;
+                    $csvfile = $filename;
+                    continue;
+                }
+                $size += filesize($filename);
                 if ($size > $limit) break;
-                copy($files[$keys[$file_idx]], public_path($output.$zip_idx.'/'.basename($files[$keys[$file_idx]])));
-                // $zip->add($files[$keys[$file_idx]]);
+                copy($filename, public_path($output.$zip_idx.'/'.basename($filename)));
                 $file_idx++;
             }
             $zip = Zip::create(public_path($output.'/'.$zip_idx.'.zip'));
@@ -178,18 +183,23 @@ class ProcessEbay implements ShouldQueue
 
             $this->deleteDir(public_path($output.'/'.$zip_idx));
 
+            mkdir(public_path($output.$zip_idx));
+            rename(public_path($output.'/'.$zip_idx.'.zip'), public_path($output.'/'.$zip_idx.'/'.$zip_idx.'.zip'));
+
             $zip_idx++;
             $size = 0;
         }
 
         $totalZip = Zip::create(public_path($output.'/result.zip'));
-        $totalZip->add($files[$keys[0]]);
+        if ($csvfile != ""){
+            $totalZip->add($csvfile);
+        }
         for($i = 1; $i < $zip_idx; $i++){
-            $totalZip->add(public_path($output.'/'.$i.'.zip'));
+            $totalZip->add(public_path($output.'/'.$i));
         }
         $totalZip->close();
         for($i = 1; $i < $zip_idx; $i++){
-            unlink(public_path($output.'/'.$i.'.zip'));
+            $this->deleteDir(public_path($output.'/'.$i));
         }
     }
 
