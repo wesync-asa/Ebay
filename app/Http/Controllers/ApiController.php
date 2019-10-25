@@ -16,7 +16,7 @@ class ApiController extends Controller
     //
     public function getProductCount(Request $req){
         $ebay = new EBayApi();
-        $response = $ebay->findItemsAdvanced($req, 1);
+        $response = $ebay->findItemsAdvanced($req, 1, 100);
 
         if ($response->ack === "Failure"){
             $err = array();

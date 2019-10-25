@@ -15,6 +15,7 @@ use App\Models\Condition;
 use App\Events\QueryChanged;
 use Image;
 use Zip;
+use Log;
 
 class ProcessEbay implements ShouldQueue
 {
@@ -42,18 +43,18 @@ class ProcessEbay implements ShouldQueue
         try{
             $this->query->status = "process";
             $this->query->save();
-            event(new QueryChanged());
+            event(new QueryChanged($this->query));
 
             $condition = $this->query->condition;
             $limit = (int)$condition->image_limit;
 
             $ebay = new EBayApi();
-            $response = $ebay->findItemsAdvanced($condition, 1);
+            $response = $ebay->findItemsAdvanced($condition, 1, 100);
 
             $allitems = array($response->searchResult->item);
             $pageCt = $response->paginationOutput->totalPages;
             for($i = 2; $i <= $pageCt; $i++){
-                $response = $ebay->findItemsAdvanced($condition, $i);
+                $response = $ebay->findItemsAdvanced($condition, $i, 100);
                 array_push($allitems, $response->searchResult->item);
             }
             if (!is_dir(public_path('/downloads/'.$this->query->id))){
@@ -76,7 +77,8 @@ class ProcessEbay implements ShouldQueue
             fwrite($csvfile, chr(255).chr(254).mb_convert_encoding(implode("\t",$headers)."\r\n", 'UTF-16LE', 'UTF-8'));
             
             foreach($allitems as $items){
-                foreach($items as $item){
+                $itemIds = array();
+                foreach($items as $item) {
                     //calc price by csv setting
                     $price = ($item->sellingStatus->currentPrice->value + $condition->diff) * $condition->multiply * $condition->exrate;
                     if (!$condition->unit) $condition->unit = 1;
@@ -85,44 +87,57 @@ class ProcessEbay implements ShouldQueue
                     $permitted_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
                     $id = substr(str_shuffle($permitted_chars), 0, 6).time();
                     $line = array($id, $item->title, $item->sellerInfo->sellerUserName, $price);
-                    //process image
-                    $images = $ebay->getSingleItem($item);
-                    $arr_imgs = array();
-                    while($images->current()){
-                        if ($images->key() > $limit) break;
-                        array_push($arr_imgs, $images->current());
-                        $images->next();
-                    }
-                    if ($condition->addon_file){
-                        array_splice($arr_imgs, $condition->addon_pos, 0, asset($condition->addon_file));
-                    }
-                    foreach($arr_imgs as $key => $img){
-                        $image_path = '/downloads/'.$this->query->id.'/'. $id.'_'.$key.'.jpg';
-                        if ($key == "0") {
-                            $image_path = '/downloads/'.$this->query->id.'/'. $id.'.jpg';
+                    $lines[$item->itemId] = $line;
+                    //make item id arrays for multi get
+                    array_push($itemIds, $item->itemId);
+                }
+                //process image
+                for($imgI = 0; $imgI < count($items) / 20; $imgI++){
+                    $sub_itemIds = array_slice($itemIds, $imgI * 20, 20);
+                    $multiItems = $ebay->getMultiItems($sub_itemIds);
+                    foreach($multiItems as $eachItem) {
+                        $images = $eachItem->PictureURL;
+                        $arr_imgs = array();
+                        $line = $lines[$eachItem->ItemID];
+                        while($images->current()){
+                            if ($images->key() > $limit) break;
+                            array_push($arr_imgs, $images->current());
+                            $images->next();
                         }
-                        $orgImg = null;
-                        $flag = true;
-                        $try = 1;
-                        while ($flag && $try <= 3){
-                            try {
-                                $orgImg = Image::make($img);
-                                $flag = false;
-                            } catch (\Exception $e) {
-
+                        if ($condition->addon_file){
+                            array_splice($arr_imgs, $condition->addon_pos, 0, asset($condition->addon_file));
+                        }
+                        foreach($arr_imgs as $key => $img){
+                            $image_path = '/downloads/'.$this->query->id.'/'. $line[0].'_'.$key.'.jpg';
+                            if ($key == "0") {
+                                $image_path = '/downloads/'.$this->query->id.'/'. $line[0].'.jpg';
                             }
-                            $try++;
+                            $orgImg = null;
+                            $flag = true;
+                            $try = 1;
+                            Log::error($img);
+                            while ($flag && $try <= 3){
+                                try {
+                                    $orgImg = Image::make($img);
+                                    $flag = false;
+                                } catch (\Exception $e) {
+        
+                                }
+                                $try++;
+                            }
+                            if ($condition->insert_file){
+                                $insert_img = Image::make(public_path($condition->insert_file));
+                                $insert_img = $insert_img->widen($insert_img->width() / 100 * $condition->scale);
+                                $orgImg->insert($insert_img, $condition->ref_point, $condition->off_x, $condition->off_y);
+                            }
+                            if ($orgImg != null){
+                                $orgImg->save(public_path($image_path));
+                            }
+                            array_push($line, asset($image_path));
                         }
-                        if ($condition->insert_file){
-                            $insert_img = Image::make(public_path($condition->insert_file));
-                            $insert_img = $insert_img->widen($insert_img->width() / 100 * $condition->scale);
-                            $orgImg->insert($insert_img, $condition->ref_point, $condition->off_x, $condition->off_y);
-                        }
-                        $orgImg->save(public_path($image_path));
-                        array_push($line, asset($image_path));
+                        fwrite($csvfile, mb_convert_encoding(implode("\t",$line)."\r\n", 'UTF-16LE', 'UTF-8'));
+                        $lines[$eachItem->ItemID] = $line;
                     }
-                    // fputcsv($csvfile, $line);
-                    fwrite($csvfile, mb_convert_encoding(implode("\t",$line)."\r\n", 'UTF-16LE', 'UTF-8'));
                 }
             }
 
@@ -134,10 +149,10 @@ class ProcessEbay implements ShouldQueue
 
             $this->query->status = "finish";
             $this->query->save();
-            event(new QueryChanged());
+            event(new QueryChanged($this->query));
         } catch (Exception $e){
             $this->query->status = "failure";
-            event(new QueryChanged());
+            event(new QueryChanged($this->query));
         }
     }
 

@@ -6,7 +6,7 @@ use \DTS\eBaySDK\Finding\Services;
 use \DTS\eBaySDK\Finding\Types;
 
 class EBayApi {
-    public function findItemsAdvanced($req, $page){
+    public function findItemsAdvanced($req, $page, $count){
         $config = Config::get('ebay.production');
 
         $service = new Services\FindingService([
@@ -94,7 +94,7 @@ class EBayApi {
         $request->sortOrder = 'CurrentPriceHighest';
         
         $request->paginationInput = new Types\PaginationInput();
-        $request->paginationInput->entriesPerPage = 100;
+        $request->paginationInput->entriesPerPage = $count;
         $request->paginationInput->pageNumber = $page;
 
         $request->outputSelector = ['SellerInfo'];
@@ -116,6 +116,22 @@ class EBayApi {
 
         $response = $service->getSingleItem($request);
         return $response->Item->PictureURL;
+    }
+
+    public function getMultiItems($items){
+        $config = Config::get('ebay.production');
+
+        $service = new \DTS\eBaySDK\Shopping\Services\ShoppingService([
+            'credentials' => $config['credentials'],
+        ]);
+        
+        $request = new \DTS\eBaySDK\Shopping\Types\GetMultipleItemsRequestType();
+        
+        $request->ItemID = $items;
+
+        $response = $service->getMultipleItems($request);
+        
+        return $response->Item;
     }
 
     public function getCategoryInfo($id){
