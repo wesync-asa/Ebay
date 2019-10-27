@@ -37,7 +37,7 @@ class ApiController extends Controller
     }
 
     public function process(Request $req){
-        exec('nohup /usr/local/php/7.1/bin/php artisan queue:listen --timeout=0 > my.log 2>&1 & echo $! > save_pid.txt &');
+        // exec('nohup /usr/local/php/7.1/bin/php artisan queue:listen --timeout=0 > my.log 2>&1 & echo $! > save_pid.txt &');
         $query = new Query();
         $query->keyword = $req->keyword;
         $query->seller = $req->seller;
