@@ -134,7 +134,7 @@ class ApiController extends Controller
                 $query->delete();
             }
         }
-        event(new QueryChanged());
+        // event(new QueryChanged());
         return response()->json(['data' => $req->ids]);
     }
 

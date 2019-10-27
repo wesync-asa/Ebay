@@ -470,7 +470,7 @@
                     }
                 }
                 if (bidx < 0) {
-                    this.history.add(e.query);
+                    // this.history.add(e.query);
                 }
             })
         },
@@ -516,7 +516,7 @@
                 axios.post("http://" + window.location.hostname + "/api/remove",{
                     ids: this.remove_check
                 }).then(response => {
-
+                    this.updateHistory()
                 }).catch(error => {
 
                 })
