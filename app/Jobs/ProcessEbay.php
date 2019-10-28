@@ -121,7 +121,7 @@ class ProcessEbay implements ShouldQueue
                                     $orgImg = Image::make($img);
                                     $flag = false;
                                 } catch (\Exception $e) {
-                                    Log::error("Image error");
+                                    Log::error($e);
                                 }
                                 $try++;
                             }
