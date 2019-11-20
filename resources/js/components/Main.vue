@@ -562,8 +562,13 @@
                 this.productCt = 0;
                 this.proLoading = true;
                 this.searchStatus = "";
-                let cat = this.sel_category_2 == "" ? this.sel_category_1 : this.sel_category_2;
-                cat = this.sel_category_3 == "" ? this.sel_category_2 : this.sel_category_3;
+                let cat = this.sel_category_1;
+                if (this.sel_category_2 != ""){
+                    cat = this.sel_category_2;
+                }
+                if (this.sel_category_3 != ""){
+                    cat = this.sel_category_3;
+                }
                 axios.post("http://" + window.location.hostname + '/api/getProductCount', {
                     site: this.site,
                     keyword: this.keyword,
@@ -598,8 +603,13 @@
                 if (this.productCt == 0) return;
                 this.processing = true;
                 let formData = new FormData();
-                let cat = this.sel_category_2 == "" ? this.sel_category_1 : this.sel_category_2;
-                cat = this.sel_category_3 == "" ? this.sel_category_2 : this.sel_category_3;
+                let cat = this.sel_category_1;
+                if (this.sel_category_2 != ""){
+                    cat = this.sel_category_2;
+                }
+                if (this.sel_category_3 != ""){
+                    cat = this.sel_category_3;
+                }
                 //search field
                 formData.append('productCt', this.productCt);
                 formData.append('site', this.site);
