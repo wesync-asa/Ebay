@@ -129,7 +129,9 @@ class ApiController extends Controller
         foreach($req->ids as $id){
             $query = Query::find($id);
             if ($query != null){
-                $this->deleteDir(public_path('/downloads/'.$query->id));
+                if (is_dir(public_path('/downloads/'.$query->id))){
+                    $this->deleteDir(public_path('/downloads/'.$query->id));
+                }
                 $query->condition->delete();
                 $query->delete();
             }

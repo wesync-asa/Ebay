@@ -38,6 +38,14 @@ class ProcessEbay implements ShouldQueue
      *
      * @return void
      */
+
+    public function failed()
+    {
+        $this->query->status = "failure";
+        $this->query->save();
+        event(new QueryChanged($this->query));
+    }
+
     public function handle()
     {
         try{
@@ -153,6 +161,7 @@ class ProcessEbay implements ShouldQueue
             event(new QueryChanged($this->query));
         } catch (Exception $e){
             $this->query->status = "failure";
+            $this->query->save();
             event(new QueryChanged($this->query));
         }
     }

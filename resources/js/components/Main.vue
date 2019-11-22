@@ -296,7 +296,7 @@
             
     <div class="row">
         <div class="col-sm-2"></div>
-        <div class="col-sm-8">
+        <div class="col-sm-9">
             <h3>処理ステータス</h3>
             <div class="form-group">
                 <button type="button" class="btn btn-primary" v-on:click="removeHistory">削除</button>
@@ -306,6 +306,7 @@
                     <tr>
                         <th>選択</th>
                         <th>登録日時</th>
+                        <th>処理終了</th>
                         <th>ステータス</th>
                         <th>キーワード</th>
                         <th>出品者ID</th>
@@ -319,11 +320,13 @@
                 <tbody>
                     <template v-for="(item, index) in history">
                         <tr v-bind:key="index">
-                            <td><input v-if="item.status === 'finish'" type="checkbox" 
+                            <td><input v-if="item.status === 'finish' || item.status === 'failure'" type="checkbox" 
                                 v-model="remove_check" 
                                 :checked="remove_check.indexOf(+item.id)>-1"
                                 :value="item.id"></td>
                             <td>{{item.created_at}}</td>
+                            <td v-if="item.status === 'finish' || item.status === 'failure'">{{item.updated_at}}</td>
+                            <td v-if="item.status === 'init' || item.status === 'process'"></td>
                             <td v-if="item.status === 'init'">未処理</td>
                             <td v-if="item.status === 'process'">実行中</td>
                             <td v-if="item.status === 'finish'">完了</td>
