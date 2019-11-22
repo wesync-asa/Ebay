@@ -160,9 +160,9 @@ class ProcessEbay implements ShouldQueue
             $this->query->save();
             event(new QueryChanged($this->query));
         } catch (Exception $e){
-            $this->query->status = "failure";
-            $this->query->save();
-            event(new QueryChanged($this->query));
+            // $this->query->status = "failure";
+            // $this->query->save();
+            // event(new QueryChanged($this->query));
         }
     }
 
