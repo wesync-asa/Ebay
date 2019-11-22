@@ -134,12 +134,12 @@ class ProcessEbay implements ShouldQueue
                                 }
                                 $try++;
                             }
-                            if ($condition->insert_file){
-                                $insert_img = Image::make(public_path($condition->insert_file));
-                                $insert_img = $insert_img->widen($insert_img->width() / 100 * $condition->scale);
-                                $orgImg->insert($insert_img, $condition->ref_point, $condition->off_x, $condition->off_y);
-                            }
                             if ($orgImg != null){
+                                if ($condition->insert_file){
+                                    $insert_img = Image::make(public_path($condition->insert_file));
+                                    $insert_img = $insert_img->widen($insert_img->width() / 100 * $condition->scale);
+                                    $orgImg->insert($insert_img, $condition->ref_point, $condition->off_x, $condition->off_y);
+                                }
                                 $orgImg->save(public_path($image_path));
                             }
                             array_push($line, asset($image_path));
