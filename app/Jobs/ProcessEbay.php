@@ -84,8 +84,17 @@ class ProcessEbay implements ShouldQueue
             }
             // fputcsv($csvfile, $headers);
             fwrite($csvfile, chr(255).chr(254).mb_convert_encoding(implode("\t",$headers)."\r\n", 'UTF-16LE', 'UTF-8'));
+
+            $insert_img = null;
+            if ($condition->insert_file){
+                $insert_img = Image::make(public_path($condition->insert_file));
+                $insert_img = $insert_img->widen($insert_img->width() / 100 * $condition->scale);
+            }
+
+            $file_array = array();
             
             foreach($allitems as $items){
+                $files = array();
                 $itemIds = array();
                 foreach($items as $item) {
                     //calc price by csv setting
@@ -94,7 +103,7 @@ class ProcessEbay implements ShouldQueue
                     $price = round($price / $condition->unit, 1, PHP_ROUND_HALF_UP) * $condition->unit;
                     //make a csv row array
                     $permitted_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                    $id = substr(str_shuffle($permitted_chars), 0, 6).time();
+                    $id = substr(str_shuffle($permitted_chars), 0, 5).time();
                     $line = array($id, $item->title, $item->sellerInfo->sellerUserName, $price);
                     $lines[$item->itemId] = $line;
                     //make item id arrays for multi get
@@ -113,14 +122,16 @@ class ProcessEbay implements ShouldQueue
                             array_push($arr_imgs, $images->current());
                             $images->next();
                         }
+                        $addon_str = "";
                         if ($condition->addon_file){
                             array_splice($arr_imgs, $condition->addon_pos, 0, asset($condition->addon_file));
+                            $addon_str = asset($condition->addon_file);
                         }
                         foreach($arr_imgs as $key => $img){
-                            $image_path = '/downloads/'.$this->query->id.'/'. $line[0].'_'.$key.'.jpg';
-                            if ($key == "0") {
-                                $image_path = '/downloads/'.$this->query->id.'/'. $line[0].'.jpg';
-                            }
+                            $image_path = '/downloads/'.$this->query->id.'/'. $line[0].$key.'.jpg';
+                            // if ($key == "0") {
+                            //     $image_path = '/downloads/'.$this->query->id.'/'. $line[0].'.jpg';
+                            // }
                             $orgImg = null;
                             $flag = true;
                             $try = 1;
@@ -135,15 +146,19 @@ class ProcessEbay implements ShouldQueue
                                 $try++;
                             }
                             if ($orgImg != null){
-                                if ($condition->insert_file){
-                                    $insert_img = Image::make(public_path($condition->insert_file));
-                                    $insert_img = $insert_img->widen($insert_img->width() / 100 * $condition->scale);
+                                if ($condition->insert_file && $img != $addon_str){
                                     $orgImg->insert($insert_img, $condition->ref_point, $condition->off_x, $condition->off_y);
                                 }
-                                $orgImg->save(public_path($image_path));
+                                if ($img == $addon_str) {
+                                    copy(public_path($condition->addon_file), public_path($image_path));
+                                } else {
+                                    $orgImg->save(public_path($image_path));   
+                                }
+                                array_push($line, asset($image_path));
+                                array_push($files, $image_path);
                             }
-                            array_push($line, asset($image_path));
                         }
+                        array_push($file_array, $files);
                         fwrite($csvfile, mb_convert_encoding(implode("\t",$line)."\r\n", 'UTF-16LE', 'UTF-8'));
                         $lines[$eachItem->ItemID] = $line;
                     }
@@ -169,63 +184,74 @@ class ProcessEbay implements ShouldQueue
     public function zipFiles($qid){
         $output = public_path('/downloads/'.$qid);
         $files = array();
+        $csvfile = "";
+        $prefix = "";
         if ($handle = opendir($output)) {
             while (false !== ($entry = readdir($handle))) {
                 if ($entry != "." && $entry != "..") {
-                    array_push($files, public_path('/downloads/'.$qid.'/'.$entry));
+                    if(strpos($entry, '.csv')){
+                        $csvfile = public_path('/downloads/'.$qid.'/'.$entry);
+                        continue;
+                    }
+                    $p = substr($entry, 0, 15);
+                    if ($prefix != $p){
+                        $files[$p] = array();
+                        $prefix = $p;
+                    }
+                    array_push($files[$prefix], public_path('/downloads/'.$qid.'/'.$entry));
                 }
             }
             closedir($handle);
         }
-
+        
         $output = '/downloads/'.$qid.'/';
         $size = 0;
-        $limit = 25 * 1024 * 1024;
-        
+        $limit = 24 * 1024 * 1024;
+
         $zip_idx = 1;
         $file_idx = 0;
-        $keys = array_keys($files);
-        $csvfile = "";
-        while(true){
-            if ($file_idx > count($files) - 1) break;
-            mkdir(public_path($output.$zip_idx));
-            while($size < $limit){
-                if ($file_idx > count($files) - 1) break;
-                $filename = $files[$keys[$file_idx]];
-                if(strpos($filename, 'csv')){ 
-                    $file_idx++;
-                    $csvfile = $filename;
-                    continue;
-                }
-                $size += filesize($filename);
-                if ($size > $limit) break;
-                copy($filename, public_path($output.$zip_idx.'/'.basename($filename)));
-                $file_idx++;
+        $file_array_for_zip = array();
+
+        foreach($files as $p){
+            if ($size > $limit){
+                $this->subzip($output, $zip_idx, $file_array_for_zip);
+                $zip_idx++;
+                $size = 0;
+                $file_array_for_zip = array();
             }
-            $zip = Zip::create(public_path($output.'/'.$zip_idx.'.zip'));
-            $zip->add(public_path($output.'/'.$zip_idx));
-            $zip->close();
-
-            $this->deleteDir(public_path($output.'/'.$zip_idx));
-
-            mkdir(public_path($output.$zip_idx));
-            rename(public_path($output.'/'.$zip_idx.'.zip'), public_path($output.'/'.$zip_idx.'/'.$zip_idx.'.zip'));
-
-            $zip_idx++;
-            $size = 0;
+            foreach($p as $f){
+                $size += filesize($f);
+                array_push($file_array_for_zip, $f);
+            }
         }
+        
+        $this->subzip($output, $zip_idx, $file_array_for_zip);
 
         $totalZip = Zip::create(public_path($output.'/result.zip'));
         if ($csvfile != ""){
             $totalZip->add($csvfile);
         }
-        for($i = 1; $i < $zip_idx; $i++){
+        for($i = 1; $i <= $zip_idx; $i++){
             $totalZip->add(public_path($output.'/'.$i));
         }
         $totalZip->close();
-        for($i = 1; $i < $zip_idx; $i++){
+        for($i = 1; $i <= $zip_idx; $i++){
             $this->deleteDir(public_path($output.'/'.$i));
         }
+    }
+
+    public function subzip($output, $zip_idx, $file_array_for_zip){
+        mkdir(public_path($output.$zip_idx));
+        foreach($file_array_for_zip as $fz){
+            copy($fz, public_path($output.$zip_idx.'/'.basename($fz)));
+        }
+        $zip = Zip::create(public_path($output.'/'.$zip_idx.'.zip'));
+        $zip->add(public_path($output.'/'.$zip_idx));
+        $zip->close();
+
+        $this->deleteDir(public_path($output.'/'.$zip_idx));
+        mkdir(public_path($output.$zip_idx));
+        rename(public_path($output.'/'.$zip_idx.'.zip'), public_path($output.'/'.$zip_idx.'/'.$zip_idx.'.zip'));
     }
 
     public function getSingleItemImages($item){
