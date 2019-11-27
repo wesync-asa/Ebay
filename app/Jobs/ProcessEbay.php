@@ -186,7 +186,6 @@ class ProcessEbay implements ShouldQueue
         $output = public_path('/downloads/'.$qid);
         $files = array();
         $csvfile = "";
-        $prefix = "";
         if ($handle = opendir($output)) {
             while (false !== ($entry = readdir($handle))) {
                 if ($entry != "." && $entry != "..") {
@@ -195,11 +194,10 @@ class ProcessEbay implements ShouldQueue
                         continue;
                     }
                     $p = substr($entry, 0, 15);
-                    if ($prefix != $p){
+                    if (!array_key_exists($p, $files)){
                         $files[$p] = array();
-                        $prefix = $p;
                     }
-                    array_push($files[$prefix], public_path('/downloads/'.$qid.'/'.$entry));
+                    array_push($files[$p], public_path('/downloads/'.$qid.'/'.$entry));
                 }
             }
             closedir($handle);
