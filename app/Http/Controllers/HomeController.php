@@ -32,6 +32,28 @@ class HomeController extends Controller
         return view('home');
     }
 
-    public function test(){
+    public function test($qid){
+        $output = public_path('/downloads/'.$qid);
+        $files = array();
+        $csvfile = "";
+        $prefix = "";
+        if ($handle = opendir($output)) {
+            while (false !== ($entry = readdir($handle))) {
+                if ($entry != "." && $entry != "..") {
+                    if(strpos($entry, '.csv')){
+                        $csvfile = public_path('/downloads/'.$qid.'/'.$entry);
+                        continue;
+                    }
+                    $p = substr($entry, 0, 15);
+                    if ($prefix != $p){
+                        $files[$p] = array();
+                        $prefix = $p;
+                    }
+                    array_push($files[$prefix], public_path('/downloads/'.$qid.'/'.$entry));
+                }
+            }
+            closedir($handle);
+        }
+        dd($files);
     }
 }
