@@ -103,7 +103,8 @@ class ProcessEbay implements ShouldQueue
                     $price = round($price / $condition->unit, 1, PHP_ROUND_HALF_UP) * $condition->unit;
                     //make a csv row array
                     $permitted_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                    $id = substr(str_shuffle($permitted_chars), 0, 5).time();
+                    $permitted_numbers = '0123456789';
+                    $id = substr(str_shuffle($permitted_chars), 0, 6).substr(str_shuffle($permitted_numbers), 0, 10);
                     $line = array($id, $item->title, $item->sellerInfo->sellerUserName, $price);
                     $lines[$item->itemId] = $line;
                     //make item id arrays for multi get
@@ -128,10 +129,10 @@ class ProcessEbay implements ShouldQueue
                             $addon_str = asset($condition->addon_file);
                         }
                         foreach($arr_imgs as $key => $img){
-                            $image_path = '/downloads/'.$this->query->id.'/'. $line[0].$key.'.jpg';
-                            // if ($key == "0") {
-                            //     $image_path = '/downloads/'.$this->query->id.'/'. $line[0].'.jpg';
-                            // }
+                            $image_path = '/downloads/'.$this->query->id.'/'. $line[0].'_'.$key.'.jpg';
+                            if ($key == "0") {
+                                $image_path = '/downloads/'.$this->query->id.'/'. $line[0].'.jpg';
+                            }
                             $orgImg = null;
                             $flag = true;
                             $try = 1;
