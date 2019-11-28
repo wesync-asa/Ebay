@@ -104,22 +104,26 @@ class ApiController extends Controller
         $result = array();
         foreach($arr_query as $q){
             $item = $q->toArray();
-            $item['condition'] = $q->condition->toArray();
+            if ($q->condition != null){
+                $item['condition'] = $q->condition->toArray();
 
-            $arr_condition = [];
-            if ($q->condition->proType1 == "true") array_push($arr_condition, '新品');
-            if ($q->condition->proType2 == "true") array_push($arr_condition, '中古');
-            if ($q->condition->proType3 == "true") array_push($arr_condition, '未指定商品');
-            $item['condition']['proType1'] = implode(',', $arr_condition);
+                $arr_condition = [];
+                if ($q->condition->proType1 == "true") array_push($arr_condition, '新品');
+                if ($q->condition->proType2 == "true") array_push($arr_condition, '中古');
+                if ($q->condition->proType3 == "true") array_push($arr_condition, '未指定商品');
+                $item['condition']['proType1'] = implode(',', $arr_condition);
 
-            $arr_auction = [];
-            if ($q->condition->aucType1 == "true") array_push($arr_auction, 'Auction');
-            if ($q->condition->aucType2 == "true") array_push($arr_auction, 'AuctionWithBIN');
-            if ($q->condition->aucType3 == "true") array_push($arr_auction, 'FixedPrice');
-            $item['condition']['aucType1'] = implode(',', $arr_auction);
+                $arr_auction = [];
+                if ($q->condition->aucType1 == "true") array_push($arr_auction, 'Auction');
+                if ($q->condition->aucType2 == "true") array_push($arr_auction, 'AuctionWithBIN');
+                if ($q->condition->aucType3 == "true") array_push($arr_auction, 'FixedPrice');
+                $item['condition']['aucType1'] = implode(',', $arr_auction);
 
-            $item['condition']['addon_file'] = asset($item['condition']['addon_file']);
-            $item['condition']['insert_file'] = asset($item['condition']['insert_file']);
+                $item['condition']['addon_file'] = asset($item['condition']['addon_file']);
+                $item['condition']['insert_file'] = asset($item['condition']['insert_file']);
+            } else {
+                $item['condition'] = array();
+            }
             array_push($result, $item);
         }
         return response()->json(['history' => $result]);
