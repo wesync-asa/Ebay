@@ -83,11 +83,11 @@ class ApiController extends Controller
         $condition->addon_pos = $req->addon_pos;
         $condition->image_loc = $req->image_loc;
 
-        if ($req->addon_file){
+        if ($req->hasFile("addon_file")){
             $req->addon_file->move(public_path('img/custom'), $query->id."_addon.jpg");
             $condition->addon_file = 'img/custom/'. $query->id."_addon.jpg";
         }
-        if ($req->insert_file){
+        if ($req->hasFile("insert_file")){
             $req->insert_file->move(public_path('img/custom'), $query->id."_insert.jpg");
             $condition->insert_file = 'img/custom/'. $query->id."_insert.jpg";
         }
