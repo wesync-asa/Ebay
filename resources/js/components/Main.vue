@@ -659,7 +659,11 @@
                         'Content-Type': 'multipart/form-data'
                     }
                 ).then(response => {
-                    this.updateHistory();
+                    if(response.data.success){
+                        this.updateHistory();
+                    } else {
+                        alert(response.data.message);
+                    }
                     this.processing = false;
                 }).catch(response => {
                     this.processing = false;

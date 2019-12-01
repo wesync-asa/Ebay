@@ -19,4 +19,4 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 // Route::get('/ebay', 'HomeController@testEbay')->name('testEbay');
-Route::get('test/{id}', 'HomeController@test');
+Route::get('test', 'HomeController@test');
