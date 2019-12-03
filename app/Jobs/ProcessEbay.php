@@ -137,15 +137,7 @@ class ProcessEbay implements ShouldQueue
                             $flag = true;
                             $try = 1;
                             Log::error($img);
-                            while ($flag && $try <= 3){
-                                try {
-                                    $orgImg = Image::make($img);
-                                    $flag = false;
-                                } catch (\Exception $e) {
-                                    Log::error($e);
-                                }
-                                $try++;
-                            }
+                            $orgImg = Image::make($img);
                             if ($orgImg != null){
                                 if ($condition->insert_file && $img != $addon_str){
                                     $orgImg->insert($insert_img, $condition->ref_point, $condition->off_x, $condition->off_y);
@@ -176,9 +168,9 @@ class ProcessEbay implements ShouldQueue
             $this->query->save();
             event(new QueryChanged($this->query));
         } catch (Exception $e){
-            // $this->query->status = "failure";
-            // $this->query->save();
-            // event(new QueryChanged($this->query));
+            $this->query->status = "failure";
+            $this->query->save();
+            event(new QueryChanged($this->query));
         }
     }
 
