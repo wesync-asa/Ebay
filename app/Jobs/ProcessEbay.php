@@ -68,6 +68,10 @@ class ProcessEbay implements ShouldQueue
             if (!is_dir(public_path('/downloads/'.$this->query->id))){
                 mkdir(public_path('/downloads/'.$this->query->id));
                 chmod(public_path('/downloads/'.$this->query->id), 0777);
+            } else {
+                $this->deleteDir(public_path('/downloads/'.$this->query->id));
+                mkdir(public_path('/downloads/'.$this->query->id));
+                chmod(public_path('/downloads/'.$this->query->id), 0777);
             }
 
             $csvPath = '/downloads/'.$this->query->id.'/'.$this->query->id.'.csv';
