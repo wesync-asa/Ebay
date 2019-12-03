@@ -140,7 +140,6 @@ class ProcessEbay implements ShouldQueue
                             $orgImg = null;
                             $flag = true;
                             $try = 1;
-                            Log::error($img);
                             $orgImg = Image::make($img);
                             if ($orgImg != null){
                                 if ($condition->insert_file && $img != $addon_str){
