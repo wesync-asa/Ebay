@@ -39,7 +39,7 @@ class ApiController extends Controller
     public function process(Request $req){
         // exec('nohup /usr/local/php/7.1/bin/php artisan queue:listen --timeout=0 > my.log 2>&1 & echo $! > save_pid.txt &');
         $size_per_file = 125 * 1024;
-        $wantedSize = $req->productCt * $req->image_limit * $size_per_file * 2;
+        $wantedSize = $req->productCt * $req->image_limit * $size_per_file * 4;
         $diskSize = disk_free_space("/");
         if ($wantedSize > $diskSize){
             return response()->json(['success' => false,'message' => "Low disk space"]);
