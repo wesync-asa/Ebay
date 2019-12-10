@@ -519,6 +519,7 @@
                 })
             },
             removeHistory(){
+
                 axios.post("http://" + window.location.hostname + "/api/remove",{
                     ids: this.remove_check
                 }).then(response => {
@@ -528,12 +529,15 @@
                 })
             },
             resetQueue(){
-                axios.get("http://" + window.location.hostname + "/api/reset")
-                .then(response => {
-                    this.updateHistory()
-                }).catch(error => {
-
-                })
+                var r = confirm("リセットしてよろしいですか?");
+                if (r == true){
+                    axios.get("http://" + window.location.hostname + "/api/reset")
+                    .then(response => {
+                        this.updateHistory();
+                        alert('リセット完了');
+                    }).catch(error => {
+                    })
+                }
             },
             download(id){
                 axios.post("http://" + window.location.hostname + "/api/download", {
