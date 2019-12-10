@@ -78,7 +78,7 @@ class ProcessEbay implements ShouldQueue
             $csvfile = fopen(public_path($csvPath), 'w');
 
             $headers = array('商品ID', '商品名', '出品者ID', '価格（日本円）', 'メイン画像パス');
-            
+
             for($i = 1; $i <= $limit; $i++){
                 array_push($headers, 'サブ画像URL'.$i);
             }
@@ -96,7 +96,7 @@ class ProcessEbay implements ShouldQueue
             }
 
             $file_array = array();
-            
+
             foreach($allitems as $items){
                 $files = array();
                 $itemIds = array();
@@ -148,7 +148,7 @@ class ProcessEbay implements ShouldQueue
                                 if ($img == $addon_str) {
                                     copy(public_path($condition->addon_file), public_path($image_path));
                                 } else {
-                                    $orgImg->save(public_path($image_path));   
+                                    $orgImg->save(public_path($image_path));
                                 }
                                 array_push($line, asset($image_path));
                                 array_push($files, $image_path);
@@ -197,7 +197,7 @@ class ProcessEbay implements ShouldQueue
             }
             closedir($handle);
         }
-        
+
         $output = '/downloads/'.$qid.'/';
         $size = 0;
         $limit = 24 * 1024 * 1024;
@@ -218,7 +218,7 @@ class ProcessEbay implements ShouldQueue
                 array_push($file_array_for_zip, $f);
             }
         }
-        
+
         $this->subzip($output, $zip_idx, $file_array_for_zip);
 
         $totalZip = Zip::create(public_path($output.'/result.zip'));
@@ -232,6 +232,7 @@ class ProcessEbay implements ShouldQueue
         for($i = 1; $i <= $zip_idx; $i++){
             $this->deleteDir(public_path($output.'/'.$i));
         }
+        rename(public_path($output.'/result.zip'), public_path($output.'/'.$qid.'.zip'));
     }
 
     public function subzip($output, $zip_idx, $file_array_for_zip){
@@ -254,7 +255,7 @@ class ProcessEbay implements ShouldQueue
         $service = new \DTS\eBaySDK\Shopping\Services\ShoppingService([
             'credentials' => $config['credentials'],
         ]);
-        
+
         $request = new \DTS\eBaySDK\Shopping\Types\GetSingleItemRequestType();
         $request->ItemID = $item->itemId;
 
