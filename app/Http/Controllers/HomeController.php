@@ -33,7 +33,7 @@ class HomeController extends Controller
     }
 
     public function test(){
-        exec("ps wx", $d);
+        $d = shell_exec("ps wx");
         dd($d);
     }
 }
