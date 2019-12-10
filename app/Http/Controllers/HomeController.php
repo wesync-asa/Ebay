@@ -33,6 +33,7 @@ class HomeController extends Controller
     }
 
     public function test(){
-        echo file_get_contents("/var/www/html/save_pid.txt");
+        $pid = file_get_contents("/var/www/html/save_pid.txt");
+        exec("kill -9 ".$pid);
     }
 }
