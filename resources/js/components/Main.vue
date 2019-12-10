@@ -168,9 +168,9 @@
                 <div class="row form-group">
                     <div class="col-sm-4"><div align="right" for="ebay_site">切り上げ</div></div>
                     <div class="col-sm-6">
-                        <label><input v-model="unit" type="radio" value="100" checked>10の位</label>
-                        <label><input v-model="unit" type="radio" value="1000" checked>100の位</label>
-                        <label><input v-model="unit" type="radio" value="10000" checked>1000の位</label>
+                        <label><input v-model="unit" type="radio" value="10" checked>10の位</label>
+                        <label><input v-model="unit" type="radio" value="100" checked>100の位</label>
+                        <label><input v-model="unit" type="radio" value="1000" checked>1000の位</label>
                     </div>
                 </div>
             </form>
@@ -243,7 +243,7 @@
         </div>
         <div class="col-sm-2"></div>
     </div>
-            
+
 
     <div class="row">
         <div class="col-sm-1"></div>
@@ -265,7 +265,7 @@
         </div>
         <div class="col-sm-2"></div>
     </div>
-            
+
 
     <div class="row">
         <div class="col-sm-1"></div>
@@ -293,7 +293,7 @@
         </div>
         <div class="col-sm-2"></div>
     </div>
-            
+
     <div class="row">
         <div class="col-sm-2"></div>
         <div class="col-sm-9">
@@ -304,6 +304,7 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>選択</th>
                         <th>登録日時</th>
                         <th>処理終了</th>
@@ -320,8 +321,9 @@
                 <tbody>
                     <template v-for="(item, index) in history">
                         <tr v-bind:key="index">
-                            <td><input v-if="item.status === 'finish' || item.status === 'failure'" type="checkbox" 
-                                v-model="remove_check" 
+                            <td>{{item.id}}</td>
+                            <td><input v-if="item.status === 'finish' || item.status === 'failure'" type="checkbox"
+                                v-model="remove_check"
                                 :checked="remove_check.indexOf(+item.id)>-1"
                                 :value="item.id"></td>
                             <td>{{item.created_at}}</td>
@@ -408,7 +410,7 @@
 
 <script>
     import axios from 'axios';
-    
+
     export default {
         data() {
             return {
@@ -543,7 +545,7 @@
                 axios.get("http://" + window.location.hostname + '/api/history').then(response => {
                     this.history = response.data.history
                 }).catch(error => {
-                    
+
                 })
             },
             addOnPath(e){
@@ -653,7 +655,7 @@
                 formData.append('addon_file', this.addon_file);
                 formData.append('insert_file', this.insert_file);
                 formData.append('image_loc', this.image_loc);
-                axios.post("http://" + window.location.hostname + '/api/process', 
+                axios.post("http://" + window.location.hostname + '/api/process',
                     formData,
                     {
                         'Content-Type': 'multipart/form-data'

@@ -103,8 +103,8 @@ class ProcessEbay implements ShouldQueue
                 foreach($items as $item) {
                     //calc price by csv setting
                     $price = ($item->sellingStatus->currentPrice->value + $condition->diff) * $condition->multiply * $condition->exrate;
-                    if (!$condition->unit) $condition->unit = 1;
-                    $price = round($price / $condition->unit, 1, PHP_ROUND_HALF_UP) * $condition->unit;
+                    if (!$condition->unit) $condition->unit = 10;
+                    $price = ceil($price / $condition->unit) * $condition->unit;
                     //make a csv row array
                     $permitted_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
                     $permitted_numbers = '0123456789';
@@ -123,7 +123,7 @@ class ProcessEbay implements ShouldQueue
                         $arr_imgs = array();
                         $line = $lines[$eachItem->ItemID];
                         while($images->current()){
-                            if ($images->key() > $limit) break;
+                            if ($images->key() >= $limit) break;
                             array_push($arr_imgs, $images->current());
                             $images->next();
                         }
