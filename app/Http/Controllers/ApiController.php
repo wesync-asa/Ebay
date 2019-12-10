@@ -10,6 +10,7 @@ use App\Events\QueryChanged;
 
 use App\Components\EBayApi;
 use Auth;
+use Illuminate\Support\Facades\DB;
 
 class ApiController extends Controller
 {
@@ -176,7 +177,7 @@ class ApiController extends Controller
         $ebay = new EbayApi();
         $response = $ebay->getCategoryInfo($id);
         $result = array();
-        
+
         foreach($response as $cat){
             array_push($result, ['id' => $cat->CategoryID, 'name' => $cat->CategoryName]);
         }
@@ -192,5 +193,12 @@ class ApiController extends Controller
         } else {
             return response()->json(['files' => [asset("downloads/".$id."/result.zip")]]);
         }
+    }
+
+    public function reset(){
+        DB::delete('delete from jobs');
+        DB::delete('delete from failed_jobs');
+        Query::where('status', 'init')->orWhere('status', 'process')->update(['status' => 'failure']);
+        return response()->json(['message' => 'Reset']);
     }
 }

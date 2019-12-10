@@ -24,3 +24,4 @@ Route::get('history', 'ApiController@getHistory');
 Route::post('remove', 'ApiController@removeHistory');
 Route::post('category', 'ApiController@getCategory');
 Route::post('download', 'ApiController@download');
+Route::get('reset', 'ApiController@reset');

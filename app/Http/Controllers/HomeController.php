@@ -9,6 +9,7 @@ USE App\Components\EBayApi;
 use App\Models\Query;
 use App\Models\Condition;
 use Image;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -33,9 +34,8 @@ class HomeController extends Controller
     }
 
     public function test(){
-        $pid = file_get_contents("/var/www/html/save_pid.txt");
-        echo($pid);
-        $d = shell_exec("kill -9 ".$pid);
-        echo($d);
+        DB::delete('delete from jobs');
+        DB::delete('delete from failed_jobs');
+        Query::where('status', 'init')->orWhere('status', 'process')->update(['status' => 'failure']);
     }
 }

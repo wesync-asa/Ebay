@@ -300,6 +300,7 @@
             <h3>処理ステータス</h3>
             <div class="form-group">
                 <button type="button" class="btn btn-primary" v-on:click="removeHistory">削除</button>
+                <button type="button" class="btn btn-danger pull-right" v-on:click="resetQueue">リセット</button>
             </div>
             <table class="table table-striped">
                 <thead>
@@ -521,6 +522,14 @@
                 axios.post("http://" + window.location.hostname + "/api/remove",{
                     ids: this.remove_check
                 }).then(response => {
+                    this.updateHistory()
+                }).catch(error => {
+
+                })
+            },
+            resetQueue(){
+                axios.get("http://" + window.location.hostname + "/api/reset")
+                .then(response => {
                     this.updateHistory()
                 }).catch(error => {
 
