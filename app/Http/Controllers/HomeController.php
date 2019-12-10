@@ -33,7 +33,6 @@ class HomeController extends Controller
     }
 
     public function test(){
-        $d = shell_exec("ps wx");
-        dd($d);
+        echo file_get_contents("save_pid.txt");
     }
 }
