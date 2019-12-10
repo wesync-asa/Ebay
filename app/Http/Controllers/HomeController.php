@@ -33,6 +33,7 @@ class HomeController extends Controller
     }
 
     public function test(){
-        dd(disk_free_space("/"));
+        exec("ps wx", $d);
+        dd($d);
     }
 }
