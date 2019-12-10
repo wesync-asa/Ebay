@@ -10,6 +10,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use App\Models\User;
 
 class Controller extends BaseController
 {
@@ -177,7 +178,8 @@ class Controller extends BaseController
         // dd($result);
 
         // redirect
-        return redirect('admin/'. $this->name . '/' . $id.'/edit')->withSuccess('保存しました。');
+        // return redirect('admin/'. $this->name . '/' . $id.'/edit')->withSuccess('保存しました。');
+        return redirect()->route('admin.user.index');
     }
 
     /**

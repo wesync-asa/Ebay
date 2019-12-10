@@ -1,4 +1,4 @@
-<a href="#" data-id="{{ $id }}" onclick="deletePost(this);" class="btn btn-warning col-sm-2 col-xs-3 btn-margin">削除</a>
+<a href="#" data-id="{{ $id }}" onclick="deletePost(this);" class="btn btn-danger col-sm-2 col-xs-3 btn-margin">削除</a>
 <form method="post" action="{{ url('/admin/'. $table, $id) }}" id="form_{{ $id }}">
     @csrf
     {{ method_field('delete') }}

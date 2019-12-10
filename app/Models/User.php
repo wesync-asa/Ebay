@@ -32,7 +32,7 @@ class User extends AppModel implements AuthenticatableContract, AuthorizableCont
         'password', 'remember_token',
     ];
 
-    protected $_title = ['Admin', 'Admin'];
+    protected $_title = ['User', 'User'];
 
 
     protected $_forms = [
