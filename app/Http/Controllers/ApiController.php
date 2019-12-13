@@ -191,7 +191,7 @@ class ApiController extends Controller
         if ($query->image_loc == "0") {
             return response()->json(['files' => [asset("downloads/".$id."/".$id.".csv")]]);
         } else {
-            return response()->json(['files' => [asset("downloads/".$id."/result.zip")]]);
+            return response()->json(['files' => [asset("downloads/".$id."/".$id.".zip")]]);
         }
     }
 
