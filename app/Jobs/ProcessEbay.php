@@ -104,7 +104,7 @@ class ProcessEbay implements ShouldQueue
                     //calc price by csv setting
                     $price = ($item->sellingStatus->currentPrice->value + $condition->diff) * $condition->multiply * $condition->exrate;
                     if (!$condition->unit) $condition->unit = 10;
-                    $price = ceil($price / $condition->unit) * $condition->unit;
+                    $price = round($price / $condition->unit / 10, 0, PHP_ROUND_HALF_UP) * $condition->unit * 10;
                     //make a csv row array
                     $permitted_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
                     $permitted_numbers = '0123456789';
@@ -138,8 +138,6 @@ class ProcessEbay implements ShouldQueue
                                 $image_path = '/downloads/'.$this->query->id.'/'. $line[0].'.jpg';
                             }
                             $orgImg = null;
-                            $flag = true;
-                            $try = 1;
                             $orgImg = Image::make($img);
                             if ($orgImg != null){
                                 if ($condition->insert_file && $img != $addon_str){
@@ -149,6 +147,14 @@ class ProcessEbay implements ShouldQueue
                                     copy(public_path($condition->addon_file), public_path($image_path));
                                 } else {
                                     $orgImg->save(public_path($image_path));
+
+                                    $sizelimit = 50 * 1024;
+                                    $resImg = Image::make(public_path($image_path));
+                                    if ($resImg->filesize() > $sizelimit){
+                                        $resImg = $resImg->resize(500, null, function($constraint){
+                                            $constraint->aspectRatio();
+                                        });
+                                    }
                                 }
                                 array_push($line, asset($image_path));
                                 array_push($files, $image_path);
