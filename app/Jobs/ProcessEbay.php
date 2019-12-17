@@ -148,7 +148,7 @@ class ProcessEbay implements ShouldQueue
                                 } else {
                                     $orgImg->save(public_path($image_path));
 
-                                    $sizelimit = 50 * 1024;
+                                    $sizelimit = 500 * 1024;
                                     $resImg = Image::make(public_path($image_path));
                                     if ($resImg->filesize() > $sizelimit){
                                         $resImg = $resImg->resize(500, null, function($constraint){
