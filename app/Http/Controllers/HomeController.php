@@ -34,8 +34,6 @@ class HomeController extends Controller
     }
 
     public function test(){
-        DB::delete('delete from jobs');
-        DB::delete('delete from failed_jobs');
-        Query::where('status', 'init')->orWhere('status', 'process')->update(['status' => 'failure']);
+        dd(ceil(69832.4 / 10 / 10) * 10 * 10);
     }
 }

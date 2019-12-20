@@ -166,7 +166,7 @@
                     </div>
                 </div>
                 <div class="row form-group">
-                    <div class="col-sm-4"><div align="right" for="ebay_site">切り上げ</div></div>
+                    <div class="col-sm-4"><div align="right" for="ebay_site">四捨五入</div></div>
                     <div class="col-sm-6">
                         <label><input v-model="unit" type="radio" value="10" checked>10の位</label>
                         <label><input v-model="unit" type="radio" value="100" checked>100の位</label>
@@ -377,7 +377,7 @@
                         <label class="col-sm-6 text-md-right">加算定額（USD）</label><div class="col-sm-6">{{ current_detail.diff }}</div>
                         <label class="col-sm-6 text-md-right">乗算係数</label><div class="col-sm-6">{{ current_detail.multiply }}</div>
                         <label class="col-sm-6 text-md-right">為替レート（ 円 ）</label><div class="col-sm-6">{{ current_detail.exrate }}</div>
-                        <label class="col-sm-6 text-md-right">切り上げ</label><div class="col-sm-6">{{ current_detail.unit }}</div>
+                        <label class="col-sm-6 text-md-right">四捨五入</label><div class="col-sm-6">{{ current_detail.unit }}</div>
                     </div>
                     <h5>商品画像設定</h5>
                     <div class="row form-group">
