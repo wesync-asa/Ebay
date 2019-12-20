@@ -140,21 +140,21 @@ class ProcessEbay implements ShouldQueue
                             $orgImg = null;
                             $orgImg = Image::make($img);
                             if ($orgImg != null){
-                                if ($condition->insert_file && $img != $addon_str){
-                                    $orgImg->insert($insert_img, $condition->ref_point, $condition->off_x, $condition->off_y);
-                                }
                                 if ($img == $addon_str) {
                                     copy(public_path($condition->addon_file), public_path($image_path));
                                 } else {
                                     $orgImg->save(public_path($image_path));
-
-                                    $sizelimit = 500 * 1024;
+                                    $sizelimit = 100 * 1024;
                                     $resImg = Image::make(public_path($image_path));
                                     if ($resImg->filesize() > $sizelimit){
                                         $resImg = $resImg->resize(500, null, function($constraint){
                                             $constraint->aspectRatio();
                                         });
                                     }
+                                    if ($condition->insert_file){
+                                        $resImg->insert($insert_img, $condition->ref_point, $condition->off_x, $condition->off_y);
+                                    }
+                                    $resImg->save(public_path($image_path));
                                 }
                                 array_push($line, asset($image_path));
                                 array_push($files, $image_path);
