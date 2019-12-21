@@ -141,7 +141,7 @@ class ApiController extends Controller
             $query = Query::find($id);
             if ($query != null){
                 if (is_dir(public_path('/downloads/'.$query->id))){
-                    $this->deleteDir(public_path('/downloads/'.$query->id));
+                    $this->deleteDir(public_path('/downloads/'.$query->id), true);
                 }
                 $query->condition->delete();
                 $query->delete();
@@ -151,7 +151,7 @@ class ApiController extends Controller
         return response()->json(['data' => $req->ids]);
     }
 
-    public function deleteDir($dirPath) {
+    public function deleteDir($dirPath, $isSelf) {
         if (! is_dir($dirPath)) {
             throw new InvalidArgumentException("$dirPath must be a directory");
         }
@@ -161,12 +161,14 @@ class ApiController extends Controller
         $files = glob($dirPath . '*', GLOB_MARK);
         foreach ($files as $file) {
             if (is_dir($file)) {
-                self::deleteDir($file);
+                self::deleteDir($file, true);
             } else {
                 unlink($file);
             }
         }
-        rmdir($dirPath);
+        if ($isSelf){
+            rmdir($dirPath);
+        }
     }
 
     public function getCategory(Request $req){
@@ -198,7 +200,9 @@ class ApiController extends Controller
     public function reset(){
         DB::delete('delete from jobs');
         DB::delete('delete from failed_jobs');
-        Query::where('status', 'init')->orWhere('status', 'process')->update(['status' => 'failure']);
+        DB::delete('delete from conditions');
+        DB::delete('delete from queries');
+        $this->deleteDir(public_path('/downloads'), false);
         return response()->json(['message' => 'Reset']);
     }
 }
