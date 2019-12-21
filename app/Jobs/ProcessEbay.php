@@ -242,15 +242,11 @@ class ProcessEbay implements ShouldQueue
     }
 
     public function subzip($output, $zip_idx, $file_array_for_zip){
-        mkdir(public_path($output.$zip_idx));
-        foreach($file_array_for_zip as $fz){
-            copy($fz, public_path($output.$zip_idx.'/'.basename($fz)));
-        }
         $zip = Zip::create(public_path($output.'/'.$zip_idx.'.zip'));
-        $zip->add(public_path($output.'/'.$zip_idx));
+        foreach($file_array_for_zip as $fz){
+            $zip->add($fz);
+        }
         $zip->close();
-
-        $this->deleteDir(public_path($output.'/'.$zip_idx));
         mkdir(public_path($output.$zip_idx));
         rename(public_path($output.'/'.$zip_idx.'.zip'), public_path($output.'/'.$zip_idx.'/'.$zip_idx.'.zip'));
     }
